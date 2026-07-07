@@ -380,3 +380,203 @@ body.app-layout {
     color: var(--text-light);
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
+
+/* --- DEMO STYLES --- */
+.demo-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+.demo-btn.primary {
+    background-color: var(--accent-color);
+    color: white;
+}
+.demo-btn.primary:hover {
+    background-color: #00727a;
+}
+.demo-btn.secondary {
+    background-color: #e0e0e0;
+    color: var(--text-main);
+}
+.demo-btn.secondary:hover {
+    background-color: #cccccc;
+}
+.demo-btn.small-btn {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    background-color: var(--secondary-color);
+    color: white;
+}
+.demo-btn.small-btn:hover {
+    background-color: #004561;
+}
+
+.mt-10 { margin-top: 10px; }
+.mt-20 { margin-top: 20px; }
+
+.hidden {
+    display: none !important;
+}
+
+/* Teoria Guiada */
+.teoria-bloque {
+    background-color: var(--white);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-left: 4px solid var(--accent-color);
+}
+.teoria-bloque h3 {
+    color: var(--primary-color);
+    margin-bottom: 12px;
+}
+.pregunta-box {
+    background-color: var(--bg-color);
+    padding: 15px;
+    border-radius: 6px;
+    margin-top: 15px;
+}
+.pregunta-box label {
+    display: block;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+.feedback-msg {
+    margin-top: 10px;
+    font-weight: 500;
+}
+.ejemplo-box {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+/* Guia Ejercicios */
+.ejercicio-list {
+    background-color: var(--white);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.ej-item {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.ej-item:last-child {
+    border-bottom: none;
+}
+.highlight-ej {
+    background-color: rgba(0, 136, 145, 0.05);
+    border-left: 3px solid var(--accent-color);
+}
+.tag {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.tag-res { background-color: #d4edda; color: #155724; }
+.tag-pend { background-color: #f8d7da; color: #721c24; }
+.tag-recom { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.tag-block { background-color: #e2e3e5; color: #383d41; }
+
+/* Resolver Ejercicio */
+.resolver-container {
+    background-color: var(--white);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.enunciado-box {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-left: 4px solid var(--secondary-color);
+    margin-bottom: 20px;
+    font-size: 1.05rem;
+}
+.resolucion-textarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 1rem;
+    resize: vertical;
+}
+.resolver-actions {
+    display: flex;
+    gap: 10px;
+}
+.pista-msg {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 10px 15px;
+    border-radius: 6px;
+    border-left: 4px solid #ffeeba;
+    font-style: italic;
+}
+.feedback-card {
+    padding: 15px;
+    border-radius: 6px;
+}
+.error-card {
+    background-color: #fdf3f4;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+.success-card {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+.grupo-estudio-sug {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: var(--white);
+    border: 1px dashed var(--accent-color);
+    border-radius: 6px;
+}
+.success-msg {
+    color: #155724;
+    background-color: #d4edda;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+/* Diagnostico & Grupos */
+.diagnostico-container, .grupo-card {
+    background-color: var(--white);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.diagnostico-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.diagnostico-table th, .diagnostico-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+.diagnostico-table th {
+    background-color: #f8f9fa;
+    color: var(--primary-color);
+}
+.recomendacion-box {
+    background-color: #e9ecef;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+}

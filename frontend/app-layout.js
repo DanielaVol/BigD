@@ -59,8 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
             this.classList.add('active');
 
             const sectionName = this.textContent.trim();
+            const target = this.dataset.target;
 
-            if (this.dataset.target === 'inicio') {
+            // Integración con demo adaptativa
+            if (window.renderDemoSection && window.renderDemoSection(target, sectionName, mainContentArea, mainTitle, mainDesc)) {
+                return; // Demo handled rendering
+            }
+
+            if (target === 'inicio') {
                 // Volver a la vista inicial
                 if (mainTitle) mainTitle.textContent = initialTitle;
                 if (mainDesc) mainDesc.textContent = initialDesc;
