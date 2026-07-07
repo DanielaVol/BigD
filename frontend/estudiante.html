@@ -4,67 +4,95 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JUNTOS - Vista Estudiante</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            background-color: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
-        }
-        h1 { color: #0f3057; }
-        .logout-btn {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #d9534f;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        .logout-btn:hover { background-color: #c9302c; }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <div class="container">
-        <h1>¡Hola, <span id="user-name">Estudiante</span>!</h1>
-        <p>Bienvenido/a a tu panel de práctica de Probabilidad y Estadística.</p>
-        <p><em>(Esta es una vista placeholder de la demo)</em></p>
-        <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
-    </div>
+<body class="app-layout">
+    <div class="app-container">
+        <!-- Header superior -->
+        <header class="app-header">
+            <div class="header-logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+                <div class="header-logo-text">JUNTOS</div>
+                <div class="header-subtitle">Probabilidad y Estadística</div>
+            </div>
 
+            <div class="header-user">
+                <span class="user-name" id="header-user-name">Estudiante</span>
+                <span class="user-role" id="header-user-role">estudiante</span>
+                <button id="logout-btn" class="logout-btn">Salir</button>
+            </div>
+        </header>
+
+        <div class="app-body">
+            <!-- Menú lateral -->
+            <nav class="app-sidebar">
+                <ul class="sidebar-menu">
+                    <li class="active" data-target="inicio">Inicio</li>
+                    <li data-target="material">Material de la materia</li>
+                    <li data-target="guia">Guía de ejercicios</li>
+                    <li data-target="resolver">Resolver ejercicio</li>
+                    <li data-target="feedback">Feedback IA</li>
+                    <li data-target="diagnostico">Mi diagnóstico</li>
+                    <li data-target="practica">Práctica recomendada</li>
+                    <li data-target="grupos">Grupos de estudio</li>
+                    <li data-target="consultas">Consultas</li>
+                </ul>
+            </nav>
+
+            <!-- Área principal -->
+            <main class="app-main">
+                <h1 id="main-title">Panel de práctica</h1>
+                <p id="main-desc">Hola, <span id="welcome-name">Ana Torres</span>. Este es tu espacio de seguimiento para Probabilidad y Estadística.</p>
+
+                <div id="main-content-area">
+                    <div class="cards-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-title">Semana actual</div>
+                            <div class="stat-card-value">Semana 4</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title">Tema actual</div>
+                            <div class="stat-card-value" style="font-size: 1.2rem;">Probabilidad condicional</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title">Ejercicios de la guía</div>
+                            <div class="stat-card-value">8</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title">Resueltos</div>
+                            <div class="stat-card-value">3</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title">Con dificultad</div>
+                            <div class="stat-card-value">2</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title">Pendientes</div>
+                            <div class="stat-card-value">3</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title">Grupo sugerido</div>
+                            <div class="stat-card-value" style="font-size: 1.2rem;">jueves 18:00</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="app-layout.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Verificar sesión
-            const role = localStorage.getItem('juntos_user_role');
             const name = localStorage.getItem('juntos_user_name');
-
-            if (role !== 'estudiante') {
-                window.location.href = 'index.html'; // Redirigir si no está autorizado
-                return;
-            }
-
             if (name) {
-                document.getElementById('user-name').textContent = name;
+                const welcomeNameEl = document.getElementById('welcome-name');
+                if (welcomeNameEl) welcomeNameEl.textContent = name;
             }
-
-            // Lógica de logout
-            document.getElementById('logout-btn').addEventListener('click', () => {
-                localStorage.clear();
-                window.location.href = 'index.html';
-            });
         });
     </script>
 </body>
