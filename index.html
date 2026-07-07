@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JUNTOS - Demo Probabilidad y Estadística</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-info">
+            <div class="logo-container">
+                <!-- SVG Logo representing connection/peers -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="logo-icon">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+                <h1 class="logo-text">JUNTOS</h1>
+            </div>
+            <h2 class="subtitle">Seguimiento inteligente de práctica y grupos de estudio</h2>
+            <div class="demo-badge">Demo aplicada a la materia Probabilidad y Estadística</div>
+
+            <p class="support-text">
+                Plataforma para acompañar la práctica, detectar dificultades a tiempo y conectar estudiantes con pares y docentes.
+            </p>
+
+            <div class="highlight-text">
+                "JUNTOS no resuelve por el estudiante: acompaña su práctica, recomienda ejercicios y fortalece el aprendizaje entre pares."
+            </div>
+        </div>
+
+        <div class="login-form-container">
+            <h3>Ingreso a la plataforma</h3>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="email">Correo Electrónico / Usuario</label>
+                    <input type="email" id="email" name="email" required placeholder="ejemplo@fiuba.edu.ar">
+                </div>
+                <div class="input-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" required placeholder="Ingresá tu contraseña">
+                </div>
+                <div id="error-message" class="error-message"></div>
+                <button type="submit" class="submit-btn">Ingresar</button>
+            </form>
+
+            <div class="demo-users-info">
+                <strong>Usuarios de prueba:</strong><br>
+                Estudiante: ana.torres@fiuba.edu.ar<br>
+                Docente: mariana.lopez@fiuba.edu.ar
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
