@@ -1,6 +1,8 @@
 // State variables for the demo
 let error_estandar_dificultad = false;
 
+const TUTOR_API_URL = "http://localhost:8001/api/tutor";
+
 // Expose a global rendering function to hook into app-layout.js
 window.renderDemoSection = function(target, sectionName, mainContentArea, mainTitle, mainDesc) {
     if (!mainContentArea || !mainTitle || !mainDesc) return false;
@@ -85,6 +87,8 @@ function renderInicio(mainContentArea, mainTitle, mainDesc) {
             <button id="btn-comenzar-teoria" class="demo-btn primary">Comenzar teoría guiada</button>
         </div>
     `;
+
+
 
     document.getElementById('btn-comenzar-teoria').addEventListener('click', () => {
         clickSidebarMenu('material');
@@ -191,6 +195,9 @@ function renderTeoriaGuiada(mainContentArea, mainTitle, mainDesc) {
             </div>
         </div>
     `;
+
+    addTutorChat(mainContentArea);
+
 
     // Logic for blocks
     const setupBlock = (btnId, radioName, correctVal, nextBlockId, errorMsg) => {
@@ -377,4 +384,131 @@ function renderGrupos(mainContentArea, mainTitle, mainDesc) {
         document.getElementById('msg-unirse-grupo').classList.remove('hidden');
         this.style.display = 'none';
     });
+}
+
+
+function addTutorChat(mainContentArea) {
+    mainContentArea.insertAdjacentHTML("beforeend", `
+        <div class="tutor-chat-card mt-20">
+            <h3>Preguntale a JUNTOS</h3>
+            <p class="chat-helper-text">
+                Podés preguntarle dudas sobre distribuciones discretas, Binomial, Poisson, esperanza, varianza o ejercicios.
+            </p>
+
+            <div id="tutor-chat-messages" class="tutor-chat-messages">
+                <div class="chat-message bot">
+                    <strong>JUNTOS:</strong>
+                    Hola Ana. Estoy para ayudarte con Distribuciones discretas. Podés preguntarme una duda o pedirme que resolvamos un ejemplo paso a paso.
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <button class="demo-btn small-btn tutor-quick" data-question="No entiendo cuando uso Binomial y cuando uso Poisson">
+                    Binomial vs Poisson
+                </button>
+                <button class="demo-btn small-btn tutor-quick" data-question="Explicame esperanza de una variable aleatoria discreta con un ejemplo">
+                    Esperanza
+                </button>
+                <button class="demo-btn small-btn tutor-quick" data-question="Dame un ejemplo guiado de distribucion Binomial">
+                    Ejemplo Binomial
+                </button>
+            </div>
+
+            <div class="chat-input-row mt-10">
+                <textarea id="tutor-question" rows="3" placeholder="Escribí tu duda acá..."></textarea>
+                <button id="btn-tutor-send" class="demo-btn primary">Enviar</button>
+            </div>
+
+            <div id="tutor-loading" class="hidden mt-10">
+                JUNTOS está pensando...
+            </div>
+        </div>
+    `);
+
+    setupTutorChat();
+}
+
+
+function setupTutorChat() {
+    const sendBtn = document.getElementById("btn-tutor-send");
+    const questionInput = document.getElementById("tutor-question");
+    const quickButtons = document.querySelectorAll(".tutor-quick");
+
+    if (!sendBtn || !questionInput) return;
+
+    sendBtn.addEventListener("click", () => {
+        const question = questionInput.value.trim();
+        if (!question) return;
+
+        sendTutorQuestion(question);
+        questionInput.value = "";
+    });
+
+    quickButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            const question = button.dataset.question;
+            sendTutorQuestion(question);
+        });
+    });
+}
+
+
+function appendTutorMessage(sender, text) {
+    const messages = document.getElementById("tutor-chat-messages");
+    if (!messages) return;
+
+    const messageClass = sender === "Ana" ? "user" : "bot";
+
+    const div = document.createElement("div");
+    div.className = `chat-message ${messageClass}`;
+    div.innerHTML = `<strong>${sender}:</strong><br>${text.replace(/\n/g, "<br>")}`;
+
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+
+async function sendTutorQuestion(question) {
+    const loading = document.getElementById("tutor-loading");
+
+    appendTutorMessage("Ana", question);
+
+    if (loading) {
+        loading.classList.remove("hidden");
+    }
+
+    try {
+        const response = await fetch(TUTOR_API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                studentName: "Ana Torres",
+                currentTopic: "Distribuciones discretas de probabilidad",
+                currentBlock: "Teoría guiada",
+                question: question
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            throw new Error(data.detail || "No se pudo obtener respuesta del tutor.");
+        }
+
+        appendTutorMessage("JUNTOS", data.answer);
+
+    } catch (error) {
+        console.error(error);
+
+        appendTutorMessage(
+            "JUNTOS",
+            "No pude conectarme con el tutor IA. Revisá que el backend esté corriendo en http://localhost:8001."
+        );
+    } finally {
+        if (loading) {
+            loading.classList.add("hidden");
+        }
+    }
 }
