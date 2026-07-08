@@ -191,11 +191,17 @@ function renderTheoryState() {
     flowContainer.innerHTML = "";
     if (state.conversation.length === 0) {
         // First time initialization
-        const initialTopicsList = THEORY_TOPICS.map((t, i) => `${i + 1}. ${t}`).join("<br>");
-        const initialMessage = `Hola Ana. Esta semana vamos a trabajar estos temas:<br>${initialTopicsList}<br><br>¿Querés que empecemos?`;
+        const initialTopicsList = THEORY_TOPICS
+            .map((t, i) => `${i + 1}. ${t}`)
+            .join("\n");
 
-        state.conversation.push({ sender: "JUNTOS", text: initialMessage });
-        saveTheoryState(state);
+        const initialMessage = `Hola Ana. Esta semana vamos a trabajar estos temas:
+
+        ${initialTopicsList}
+
+        ¿Querés que empecemos?`;
+                state.conversation.push({ sender: "JUNTOS", text: initialMessage });
+                saveTheoryState(state);
     }
 
     state.conversation.forEach(msg => {
@@ -323,9 +329,10 @@ Instrucciones:
             }
             const aiData = JSON.parse(rawAnswer);
 
-            aiMessageText = aiData.message;
+            aiMessageText = aiData.message || "";
+
             if (aiData.nextPrompt) {
-                aiMessageText += `<br><br><strong>${aiData.nextPrompt}</strong>`;
+                aiMessageText += `\n\n${aiData.nextPrompt}`;
             }
 
             // Update state from AI data

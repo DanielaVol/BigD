@@ -795,7 +795,7 @@ body.app-layout {
 /* --- Interactive Theory Guided Lesson --- */
 
 .interactive-theory-container {
-    background-color: var(--color-white);
+    background-color: var(--white);
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     padding: 24px;
@@ -806,7 +806,7 @@ body.app-layout {
 }
 
 .theory-progress-container {
-    border-bottom: 1px solid var(--color-gray-light);
+    border-bottom: 1px solid #e7edf3;
     padding-bottom: 16px;
 }
 
@@ -821,15 +821,15 @@ body.app-layout {
     font-size: 0.85rem;
     padding: 6px 12px;
     border-radius: 16px;
-    background-color: var(--color-gray-light);
-    color: var(--color-gray-dark);
+    background-color: #e7edf3;
+    color: var(--text-light);
     border: 1px solid #ddd;
 }
 
 .topic-chip.active {
     background-color: #e0f2f1;
-    color: var(--color-primary-dark);
-    border-color: var(--color-primary);
+    color: var(--primary-color);
+    border-color: var(--accent-color);
     font-weight: 500;
 }
 
@@ -869,7 +869,7 @@ body.app-layout {
 
 .lesson-message.user {
     align-self: flex-end;
-    background-color: var(--color-primary);
+    background-color: var(--accent-color);
     color: white;
 }
 

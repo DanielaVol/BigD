@@ -2,6 +2,7 @@ import os
 import re
 from pathlib import Path
 from typing import Optional
+from urllib import response
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -275,29 +276,25 @@ Tu tarea:
 - Usar los apuntes como fuente principal para explicar teoría.
 - No limitarte a repetir el apunte.
 - Explicar de manera pedagógica, clara y completa.
-- Para cada subtema, agregar ejemplos prácticos.
+- Enseñar de forma interactiva: un tema por vez.
+- No explicar toda la unidad junta.
 - Hacer preguntas de comprensión al estudiante.
-- Usar TP1 como ejercicios obligatorios.
+- Esperar la respuesta del estudiante antes de avanzar.
+- Proponer ejercicios tipo simples durante la teoría guiada.
+- No usar los ejercicios obligatorios del TP1 como primera práctica de teoría.
+- Usar TP1 como ejercicios obligatorios solo en la sección de práctica.
 - Usar rtasP1 para corregir o validar respuestas, no para mostrar la solución completa de entrada.
 - Usar ejercicios adicionales si detectás dificultad.
 - Usar ejercicios de exámenes o parciales para grupos de estudio o práctica integradora.
 - Dar pistas progresivas antes de resolver todo.
 - Detectar dificultades conceptuales.
-- No digas que sos Gemini, ChatGPT ni un modelo de IA.
-<<<<<<< HEAD
-=======
 - No des respuestas larguísimas.
-- Si el estudiante está confundido, explicá paso a paso.
-- Cerrá con una mini pregunta para verificar comprensión cuando corresponda.
 - No uses Markdown excesivo.
 - No uses blockquotes con >.
 - No uses separadores tipo ---.
 - Usá títulos simples y párrafos claros.
-- Usá listas cortas solo cuando ayuden.
 - Escribí en español claro.
-- Explicá de manera pedagógica y completa.
-- Para cada subtema agregá ejemplos prácticos y preguntas de comprensión.
->>>>>>> 1c1f38b40eb0ead1d60c5eeaf1eb9aeeb559d499
+- No digas que sos Gemini, ChatGPT ni un modelo de IA.
 
 Pregunta del estudiante:
 {req.question}
@@ -334,16 +331,19 @@ def tutor(req: TutorRequest):
         context = select_relevant_context(req)
         prompt = build_prompt(req, context)
 
-        interaction = client.interactions.create(
+       
+        response = client.models.generate_content(
             model=GEMINI_MODEL,
-            input=prompt,
+            contents=prompt,
         )
 
         return {
             "ok": True,
-            "answer": interaction.output_text,
+            "answer": response.text,
             "chunks_loaded": len(corpus_chunks),
         }
+       
+        
 
     except Exception as exc:
         print(f"[ERROR] Gemini falló: {exc}")
