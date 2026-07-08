@@ -31,7 +31,7 @@ app.add_middleware(
 
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
 GEMINI_FALLBACK_MODEL = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash-lite")
 
 MATERIAL_ROOT = Path(
@@ -360,6 +360,21 @@ def generate_with_retry(client, prompt: str):
 
     raise last_error
 
+def build_local_fallback_answer(req: TutorRequest) -> str:
+    topic = (req.currentTopic or "variable aleatoria discreta").strip()
+
+    return f"""
+{{
+  "message": "Estoy teniendo una demora temporal para consultar el servicio de IA, pero podemos seguir con la clase. Sigamos con el tema actual: {topic}. Si la respuesta anterior no quedó clara, podemos volver al ejemplo y revisarlo paso a paso.",
+  "conceptStatus": "in_progress",
+  "mode": "question",
+  "currentTopic": "{topic}",
+  "nextPrompt": "¿Querés que retomemos el último ejemplo o preferís que lo explique con otro caso más simple?",
+  "completedTopic": false
+}}
+"""
+
+
 @app.post("/api/tutor")
 def tutor(req: TutorRequest):
     if not GEMINI_API_KEY:
@@ -386,10 +401,15 @@ def tutor(req: TutorRequest):
        
         
 
-    except Exception as exc:
-        print(f"[ERROR] Gemini falló: {exc}")
+        except Exception as exc:
+        print(f"[ERROR] Gemini falló definitivamente: {type(exc).__name__}: {exc}")
 
-        raise HTTPException(
-            status_code=500,
-            detail="No se pudo obtener respuesta del tutor IA.",
-        )
+        fallback_answer = build_local_fallback_answer(req)
+
+        return {
+            "ok": True,
+            "answer": fallback_answer,
+            "chunks_loaded": len(corpus_chunks),
+            "model_used": "local_fallback",
+            "warning": "Gemini no respondió. Se usó fallback local para mantener la demo activa.",
+        }

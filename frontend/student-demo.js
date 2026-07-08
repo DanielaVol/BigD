@@ -276,28 +276,60 @@ async function sendInteractiveTheoryMessage(userText) {
     }
 
     try {
-        const systemPrompt = `
-Sos JUNTOS, un tutor AI guiando a Ana paso a paso.
-Estado actual de la lección:
-- Tema actual: ${state.currentTopic}
-- Modo: ${state.mode}
-- Temas vistos: ${state.completedTopics.join(", ") || "ninguno"}
-- Temas flojos: ${state.weakTopics.join(", ") || "ninguno"}
+       const lastBotMessage = [...state.conversation]
+            .reverse()
+            .find(msg => msg.sender === "JUNTOS")?.text || "";
 
-Instrucciones:
-1. Analizá la respuesta o pregunta de Ana.
-2. Respondé de forma interactiva y pedagógica. Si está empezando un tema, presentalo, da un ejemplo y hacé una pregunta breve.
-3. No des una explicación gigante.
-4. Si Ana quiere un ejercicio, propongámosle uno paso a paso sobre ${state.currentTopic}.
-5. Tu respuesta DEBE ser un JSON válido con la siguiente estructura, sin texto extra fuera del JSON:
-{
-  "message": "Tu respuesta para Ana en texto plano o HTML básico (podes usar <br>, <strong>)",
-  "conceptStatus": "understood" | "weak" | "in_progress",
-  "mode": "intro" | "explanation" | "question" | "guided_exercise" | "ready_next",
-  "currentTopic": "${state.currentTopic}",
-  "nextPrompt": "Lo que le preguntas a Ana al final",
-  "completedTopic": true | false
-}
+        const recentConversation = state.conversation
+            .slice(-8)
+            .map(msg => `${msg.sender}: ${msg.text}`)
+            .join("\n\n");
+
+        const systemPrompt = `
+        Sos JUNTOS, un tutor educativo que guía a Ana paso a paso en la unidad Variables aleatorias discretas.
+
+        No estás empezando una conversación nueva. Tenés que continuar desde el intercambio anterior.
+
+        Estado actual de la lección:
+        - Tema actual: ${state.currentTopic}
+        - Modo actual: ${state.mode}
+        - Temas entendidos: ${state.understoodTopics.join(", ") || "ninguno"}
+        - Temas flojos: ${state.weakTopics.join(", ") || "ninguno"}
+        - Temas completados: ${state.completedTopics.join(", ") || "ninguno"}
+
+        Último mensaje de JUNTOS:
+        ${lastBotMessage}
+
+        Conversación reciente:
+        ${recentConversation}
+
+        Respuesta actual de Ana:
+        ${userText}
+
+        Reglas de comportamiento:
+        1. No saludes con "Hola Ana" en cada respuesta.
+        2. Solo saludá al inicio de la clase. Si la conversación ya empezó, continuá directamente.
+        3. No vuelvas a explicar desde cero salvo que Ana lo pida explícitamente.
+        4. Si Ana responde mal o incompleto, corregí con cuidado y seguí sobre la misma pregunta.
+        5. Si Ana dice "no", "no entiendo" o "explicame más", reexplicá el mismo punto con otro ejemplo, no cambies de tema.
+        6. Si Ana responde parcialmente bien, reconocé lo correcto y completá lo que falta.
+        7. No uses HTML. No escribas <br>, <strong>, <em> ni etiquetas.
+        8. No uses Markdown excesivo.
+        9. Usá texto claro, párrafos cortos y alguna lista breve si ayuda.
+        10. Hacé una sola pregunta al final.
+        11. No avances al siguiente tema hasta que el tema actual esté razonablemente entendido.
+        12. No uses ejercicios obligatorios del TP1 en teoría guiada; usá ejercicios tipo simples.
+
+        Devolvé SOLO un JSON válido, sin texto antes ni después, con esta estructura:
+
+        {
+        "message": "Respuesta pedagógica para Ana, sin HTML",
+        "conceptStatus": "understood" | "weak" | "in_progress",
+        "mode": "intro" | "explanation" | "question" | "guided_exercise" | "ready_next",
+        "currentTopic": "${state.currentTopic}",
+        "nextPrompt": "Una sola pregunta o propuesta concreta para Ana",
+        "completedTopic": true | false
+        }
         `;
 
         const response = await fetch(TUTOR_API_URL, {
@@ -309,7 +341,7 @@ Instrucciones:
                 studentName: "Ana Torres",
                 currentTopic: state.currentTopic,
                 currentBlock: "Teoría guiada interactiva - " + state.currentTopic,
-                question: systemPrompt + "\n\nRespuesta de Ana: " + userText
+                question: systemPrompt 
             })
         });
 
@@ -324,10 +356,23 @@ Instrucciones:
         try {
             // Intenta extraer JSON si el AI devuelve con blockquotes
             let rawAnswer = data.answer.trim();
-            if (rawAnswer.startsWith("\`\`\`json")) {
-                rawAnswer = rawAnswer.replace(/\`\`\`json/g, "").replace(/\`\`\`/g, "");
+
+            rawAnswer = rawAnswer
+                .replace(/^```json\s*/i, "")
+                .replace(/^```\s*/i, "")
+                .replace(/```$/i, "")
+                .trim();
+
+            const firstBrace = rawAnswer.indexOf("{");
+            const lastBrace = rawAnswer.lastIndexOf("}");
+
+            if (firstBrace !== -1 && lastBrace !== -1) {
+                rawAnswer = rawAnswer.slice(firstBrace, lastBrace + 1);
             }
+
             const aiData = JSON.parse(rawAnswer);
+
+
 
             aiMessageText = aiData.message || "";
 
@@ -375,7 +420,10 @@ Instrucciones:
     } catch (error) {
         console.error(error);
         document.querySelectorAll(".loading-msg").forEach(e => e.remove());
-        state.conversation.push({ sender: "JUNTOS", text: "No pude conectarme con el tutor IA. Revisá que el backend esté corriendo en http://localhost:8001." });
+        state.conversation.push({
+            sender: "JUNTOS",
+            text: "Estoy teniendo una demora temporal para responder. Probá de nuevo en unos segundos. Si querés, mientras tanto podemos seguir con el ejemplo anterior paso a paso."
+        });
         saveTheoryState(state);
         renderTheoryState();
     }
@@ -742,6 +790,12 @@ function escapeHtml(text) {
 
 function formatTutorText(text) {
     if (!text) return "";
+
+    text = text
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<\/?strong>/gi, "**")
+        .replace(/<\/?em>/gi, "*")
+        .replace(/<\/?p>/gi, "\n");
     let html = escapeHtml(text);
 
     // Títulos
