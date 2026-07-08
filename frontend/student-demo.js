@@ -8,7 +8,7 @@ window.renderDemoSection = function(target, sectionName, mainContentArea, mainTi
     if (!mainContentArea || !mainTitle || !mainDesc) return false;
 
     // We only override specific sections, others can fallback to default placeholder
-    if (['inicio', 'material', 'guia', 'resolver', 'diagnostico', 'grupos'].includes(target)) {
+    if (['inicio', 'material', 'guia', 'resolver', 'diagnostico', 'practica', 'grupos'].includes(target)) {
         renderSectionContent(target, sectionName, mainContentArea, mainTitle, mainDesc);
         return true;
     }
@@ -35,6 +35,9 @@ function renderSectionContent(target, sectionName, mainContentArea, mainTitle, m
             break;
         case 'diagnostico':
             renderDiagnostico(mainContentArea, mainTitle, mainDesc);
+            break;
+        case 'practica':
+            renderPractica(mainContentArea, mainTitle, mainDesc);
             break;
         case 'grupos':
             renderGrupos(mainContentArea, mainTitle, mainDesc);
@@ -120,22 +123,92 @@ function getInitialTheoryState() {
         completedTopics: [],
         weakTopics: [],
         understoodTopics: [],
+        detectedDifficulties: [],
+        recommendations: [],
         conversation: [],
         lastInteraction: "",
+        lastDiagnosisUpdate: null,
         mode: "intro"
     };
 }
 
 function loadTheoryState() {
     const saved = localStorage.getItem('juntos_theory_state');
-    if (saved) {
-        return JSON.parse(saved);
-    }
-    return getInitialTheoryState();
+
+    let state = saved ? JSON.parse(saved) : getInitialTheoryState();
+
+    if (!state.completedTopics) state.completedTopics = [];
+    if (!state.weakTopics) state.weakTopics = [];
+    if (!state.understoodTopics) state.understoodTopics = [];
+    if (!state.detectedDifficulties) state.detectedDifficulties = [];
+    if (!state.recommendations) state.recommendations = [];
+    if (!state.conversation) state.conversation = [];
+    if (!state.currentTopic) state.currentTopic = THEORY_TOPICS[state.currentTopicIndex || 0];
+    if (!state.mode) state.mode = "intro";
+    if (!state.lastDiagnosisUpdate) state.lastDiagnosisUpdate = null;
+
+    return state;
 }
 
 function saveTheoryState(state) {
     localStorage.setItem('juntos_theory_state', JSON.stringify(state));
+}
+
+function upsertDetectedDifficulty(state, diagnosis, topic) {
+    if (!diagnosis || !diagnosis.difficultyDetected) return;
+
+    const difficulty = {
+        topic: topic,
+        difficulty: diagnosis.difficulty || "dificultad no especificada",
+        evidence: diagnosis.evidence || "",
+        severity: diagnosis.severity || "media",
+        status: diagnosis.status || "en proceso",
+        recommendation: diagnosis.recommendation || "",
+        updatedAt: new Date().toISOString()
+    };
+
+    const existingIndex = state.detectedDifficulties.findIndex(d =>
+        d.topic === difficulty.topic && d.difficulty === difficulty.difficulty
+    );
+
+    if (existingIndex >= 0) {
+        state.detectedDifficulties[existingIndex] = {
+            ...state.detectedDifficulties[existingIndex],
+            ...difficulty
+        };
+    } else {
+        state.detectedDifficulties.push(difficulty);
+    }
+
+    if (!state.weakTopics.includes(topic)) {
+        state.weakTopics.push(topic);
+    }
+
+    state.lastDiagnosisUpdate = {
+        topic: difficulty.topic,
+        difficulty: difficulty.difficulty,
+        severity: difficulty.severity,
+        updatedAt: difficulty.updatedAt
+    };
+}
+
+function addRecommendation(state, recommendation, topic) {
+    if (!recommendation || !recommendation.text) return;
+
+    const item = {
+        topic: topic,
+        type: recommendation.type || "refuerzo",
+        text: recommendation.text,
+        updatedAt: new Date().toISOString()
+    };
+
+    const exists = state.recommendations.some(r =>
+        r.topic === item.topic && r.text === item.text
+    );
+
+    if (!exists) {
+        state.recommendations.push(item);
+    }
 }
 
 function renderTeoriaGuiada(mainContentArea, mainTitle, mainDesc) {
@@ -205,12 +278,24 @@ function renderTheoryState() {
     }
 
     state.conversation.forEach(msg => {
-        const msgClass = msg.sender === "JUNTOS" ? "bot" : "user";
-        const msgHtml = `<div class="lesson-message ${msgClass}">
-            <strong>${msg.sender}:</strong>
-            <div class="lesson-message-content">${formatTutorText(msg.text)}</div>
-        </div>`;
-        flowContainer.insertAdjacentHTML("beforeend", msgHtml);
+        if (msg.sender === "DIAGNOSTICO") {
+            const diagnosisHtml = `
+            <div class="diagnosis-inline-card">
+              <div class="diagnosis-label">Diagnóstico actualizado</div>
+              <div><strong>Tema:</strong> ${msg.topic || state.currentTopic}</div>
+              <div><strong>Dificultad detectada:</strong> ${msg.diagnosis ? msg.diagnosis.difficulty : 'Dificultad no especificada'}</div>
+              <div><strong>Recomendación:</strong> ${msg.diagnosis ? msg.diagnosis.recommendation : 'No hay recomendación'}</div>
+            </div>
+            `;
+            flowContainer.insertAdjacentHTML("beforeend", diagnosisHtml);
+        } else {
+            const msgClass = msg.sender === "JUNTOS" ? "bot" : "user";
+            const msgHtml = `<div class="lesson-message ${msgClass}">
+                <strong>${msg.sender}:</strong>
+                <div class="lesson-message-content">${formatTutorText(msg.text)}</div>
+            </div>`;
+            flowContainer.insertAdjacentHTML("beforeend", msgHtml);
+        }
     });
 
     // Scroll to bottom
@@ -307,28 +392,52 @@ async function sendInteractiveTheoryMessage(userText) {
         ${userText}
 
         Reglas de comportamiento:
-        1. No saludes con "Hola Ana" en cada respuesta.
-        2. Solo saludá al inicio de la clase. Si la conversación ya empezó, continuá directamente.
-        3. No vuelvas a explicar desde cero salvo que Ana lo pida explícitamente.
-        4. Si Ana responde mal o incompleto, corregí con cuidado y seguí sobre la misma pregunta.
-        5. Si Ana dice "no", "no entiendo" o "explicame más", reexplicá el mismo punto con otro ejemplo, no cambies de tema.
-        6. Si Ana responde parcialmente bien, reconocé lo correcto y completá lo que falta.
-        7. No uses HTML. No escribas <br>, <strong>, <em> ni etiquetas.
-        8. No uses Markdown excesivo.
-        9. Usá texto claro, párrafos cortos y alguna lista breve si ayuda.
-        10. Hacé una sola pregunta al final.
-        11. No avances al siguiente tema hasta que el tema actual esté razonablemente entendido.
-        12. No uses ejercicios obligatorios del TP1 en teoría guiada; usá ejercicios tipo simples.
+        1. Además de responderle a Ana, analizá si su respuesta muestra comprensión, confusión o dificultad.
+        2. No marques dificultad ante cualquier error mínimo. Solo si hay una confusión conceptual o una respuesta incompleta relevante.
+        3. Si Ana responde parcialmente bien, marcá conceptStatus como "in_progress".
+        4. Si Ana entiende el concepto, marcá conceptStatus como "understood".
+        5. Si Ana muestra confusión repetida o importante, marcá conceptStatus como "weak".
+        6. Si detectás dificultad, completá diagnosis.difficultyDetected = true.
+        7. Si no detectás dificultad, devolvé diagnosis.difficultyDetected = false.
+        8. La dificultad debe ser concreta, por ejemplo:
+           - "no identifica todos los valores posibles";
+           - "confunde variable aleatoria con resultado del experimento";
+           - "confunde variable discreta con continua";
+           - "omite el valor 0 en variables de conteo";
+           - "no distingue función de probabilidad y función de distribución";
+           - "confunde Binomial con Poisson";
+           - "no identifica parámetros n y p";
+           - "no interpreta esperanza como promedio teórico".
+        9. No vuelvas a empezar la explicación desde cero si Ana solo respondió una pregunta. Continuá desde la última pregunta de JUNTOS.
+        10. No saludes con "Hola Ana" en cada respuesta. Solo saludá al inicio de la clase.
+        11. No uses HTML. No escribas <br>, <strong>, <em> ni etiquetas.
+        12. No uses Markdown excesivo.
+        13. Usá texto claro, párrafos cortos y alguna lista breve si ayuda.
+        14. Hacé una sola pregunta al final.
+        15. No avances al siguiente tema hasta que el tema actual esté razonablemente entendido.
+        16. No uses ejercicios obligatorios del TP1 en teoría guiada; usá ejercicios tipo simples.
 
         Devolvé SOLO un JSON válido, sin texto antes ni después, con esta estructura:
 
         {
-        "message": "Respuesta pedagógica para Ana, sin HTML",
-        "conceptStatus": "understood" | "weak" | "in_progress",
-        "mode": "intro" | "explanation" | "question" | "guided_exercise" | "ready_next",
-        "currentTopic": "${state.currentTopic}",
-        "nextPrompt": "Una sola pregunta o propuesta concreta para Ana",
-        "completedTopic": true | false
+          "message": "Respuesta pedagógica para Ana, sin HTML",
+          "conceptStatus": "understood" | "weak" | "in_progress",
+          "mode": "intro" | "explanation" | "question" | "guided_exercise" | "ready_next",
+          "currentTopic": "${state.currentTopic}",
+          "nextPrompt": "Una sola pregunta o propuesta concreta para Ana",
+          "completedTopic": true | false,
+          "diagnosis": {
+            "difficultyDetected": true,
+            "difficulty": "no identifica todos los valores posibles",
+            "evidence": "respondió 1 y 2 cuando también era posible 0",
+            "severity": "baja" | "media" | "alta",
+            "status": "en proceso",
+            "recommendation": "hacer un ejercicio tipo más sobre valores posibles"
+          },
+          "recommendation": {
+            "type": "refuerzo" | "practica" | "avance",
+            "text": "Resolver ejercicios tipo sobre valores posibles antes de avanzar al TP1"
+          }
         }
         `;
 
@@ -388,6 +497,18 @@ async function sendInteractiveTheoryMessage(userText) {
                 state.weakTopics = state.weakTopics.filter(t => t !== state.currentTopic);
             } else if (aiData.conceptStatus === "weak" && !state.weakTopics.includes(state.currentTopic)) {
                 state.weakTopics.push(state.currentTopic);
+            }
+
+            upsertDetectedDifficulty(state, aiData.diagnosis, state.currentTopic);
+            addRecommendation(state, aiData.recommendation, state.currentTopic);
+
+            if (aiData.diagnosis && aiData.diagnosis.difficultyDetected === true) {
+                state.conversation.push({
+                    sender: "DIAGNOSTICO",
+                    text: "Diagnóstico actualizado",
+                    diagnosis: aiData.diagnosis,
+                    topic: state.currentTopic
+                });
             }
 
             if (aiData.completedTopic && !state.completedTopics.includes(state.currentTopic)) {
@@ -536,24 +657,157 @@ function renderResolverEjercicio(mainContentArea, mainTitle, mainDesc) {
 
 function renderDiagnostico(mainContentArea, mainTitle, mainDesc) {
     mainTitle.textContent = "Mi diagnóstico";
-    mainDesc.textContent = "Diagnóstico personalizado de Ana";
+    mainDesc.textContent = "Resumen de Ana Torres";
+
+    const state = loadTheoryState();
+
+    let stateGeneral = "Pendiente";
+    if (state.completedTopics.length > 0 || state.understoodTopics.length > 0) {
+        stateGeneral = state.weakTopics.length > 0 ? "En proceso" : "Avanzado";
+    }
+
+    let understoodHtml = state.understoodTopics.length > 0
+        ? state.understoodTopics.map(t => `<li>${t}</li>`).join("")
+        : "<li>Todavía no hay temas marcados como entendidos.</li>";
+
+    let difficultiesHtml = "";
+    if (state.detectedDifficulties && state.detectedDifficulties.length > 0) {
+        difficultiesHtml = state.detectedDifficulties.map(d => `
+            <div class="difficulty-item">
+                <p><strong>Dificultad en ${d.topic}:</strong> ${d.difficulty}</p>
+                <p><em>Evidencia:</em> ${d.evidence}</p>
+                <p><em>Recomendación:</em> ${d.recommendation}</p>
+            </div>
+        `).join("");
+    } else {
+        difficultiesHtml = "<p>Todavía no hay dificultades detectadas. A medida que interactúes con la teoría guiada, JUNTOS va a actualizar este diagnóstico.</p>";
+    }
+
+    let tableRows = THEORY_TOPICS.map(topic => {
+        let status = "Pendiente";
+        let statusClass = "status-pending";
+        let observation = "Todavía no iniciado";
+
+        if (state.understoodTopics.includes(topic)) {
+            status = "Entendido";
+            statusClass = "status-understood";
+            observation = "Fortaleza";
+        } else if (state.weakTopics.includes(topic)) {
+            status = "En proceso";
+            statusClass = "status-weak";
+            const diff = state.detectedDifficulties.find(d => d.topic === topic);
+            observation = diff ? "Dificultad detectada" : "Necesita refuerzo";
+        } else if (state.completedTopics.includes(topic)) {
+            status = "Completado";
+            statusClass = "status-understood";
+            observation = "Finalizado";
+        } else if (state.currentTopic === topic) {
+            status = "En progreso";
+            statusClass = "status-pending";
+            observation = "Tema actual";
+        }
+
+        return `
+            <tr>
+                <td>${topic}</td>
+                <td><span class="status-pill ${statusClass}">${status}</span></td>
+                <td>${observation}</td>
+            </tr>
+        `;
+    }).join("");
 
     mainContentArea.innerHTML = `
         <div class="diagnostico-container">
-            <table class="diagnostico-table">
-                <tr><th>Tema</th><th>Estado</th></tr>
-                <tr><td>Interpretación de intervalos</td><td>Bien</td></tr>
-                <tr><td>Valor crítico</td><td>Bien</td></tr>
-                <tr><td>Error estándar</td><td><span style="color: #e74c3c; font-weight: bold;">Reforzar</span></td></tr>
-                <tr><td>Margen de error</td><td>En proceso</td></tr>
-                <tr><td>Construcción del intervalo</td><td>En proceso</td></tr>
-                <tr><td>Intervalo para proporción</td><td>Pendiente</td></tr>
-            </table>
-            <div class="recomendacion-box mt-20">
-                <p><strong>Recomendación:</strong> Tu principal dificultad esta semana está en distinguir desvío estándar de error estándar. Te recomendamos resolver el ejercicio 4, reintentar el ejercicio 5 y sumarte al grupo de estudio del jueves.</p>
+            <div class="diagnostico-summary-grid">
+                <div class="diagnostico-card">
+                    <h4>Estado general</h4>
+                    <p class="diagnostico-status">${stateGeneral}</p>
+                </div>
+                <div class="diagnostico-card">
+                    <h4>Tema actual</h4>
+                    <p class="diagnostico-status" style="font-size: 1.2rem; text-transform: capitalize;">${state.currentTopic}</p>
+                </div>
+            </div>
+
+            <div class="diagnostico-section mt-20">
+                <h3>Fortalezas detectadas</h3>
+                <ul class="strength-list">
+                    ${understoodHtml}
+                </ul>
+            </div>
+
+            <div class="diagnostico-section mt-20">
+                <h3>Dificultades detectadas</h3>
+                <div class="difficulty-list">
+                    ${difficultiesHtml}
+                </div>
+            </div>
+
+            <div class="diagnostico-section mt-20">
+                <h3>Resumen de temas</h3>
+                <table class="topic-status-table mt-10">
+                    <thead>
+                        <tr>
+                            <th>Tema</th>
+                            <th>Estado</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
             </div>
         </div>
     `;
+}
+
+function renderPractica(mainContentArea, mainTitle, mainDesc) {
+    mainTitle.textContent = "Práctica recomendada para Ana";
+    mainDesc.textContent = "Ejercicios sugeridos antes de pasar al TP1";
+
+    const state = loadTheoryState();
+
+    let difficultiesHtml = "";
+    if (state.detectedDifficulties && state.detectedDifficulties.length > 0) {
+        difficultiesHtml = state.detectedDifficulties.map(d => `<li>${d.difficulty}</li>`).join("");
+    }
+
+    let recsHtml = "";
+    if (state.recommendations && state.recommendations.length > 0) {
+        recsHtml = state.recommendations.map((r, i) => `
+            <div class="recommendation-item">
+                <h5>${i + 1}. Ejercicio sugerido (${r.type})</h5>
+                <p>${r.text}</p>
+            </div>
+        `).join("");
+    }
+
+    if (difficultiesHtml || recsHtml) {
+        mainContentArea.innerHTML = `
+            <div class="practice-recommendation-card">
+                <div class="diagnostico-section">
+                    <h3>JUNTOS detectó que conviene reforzar:</h3>
+                    <ul>
+                        ${difficultiesHtml || "<li>Ciertos conceptos en proceso</li>"}
+                    </ul>
+                </div>
+
+                <div class="diagnostico-section mt-20">
+                    <h3>Antes de pasar al TP1, se recomienda:</h3>
+                    <div class="recommendation-list mt-10">
+                        ${recsHtml || "<p>Repasar los temas en progreso.</p>"}
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        mainContentArea.innerHTML = `
+            <div class="practice-recommendation-card">
+                <p>Todavía no hay recomendaciones específicas. Avanzá con la teoría guiada para que JUNTOS pueda personalizar tu práctica.</p>
+            </div>
+        `;
+    }
 }
 
 function renderGrupos(mainContentArea, mainTitle, mainDesc) {

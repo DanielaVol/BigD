@@ -370,7 +370,19 @@ def build_local_fallback_answer(req: TutorRequest) -> str:
   "mode": "question",
   "currentTopic": "{topic}",
   "nextPrompt": "¿Querés que retomemos el último ejemplo o preferís que lo explique con otro caso más simple?",
-  "completedTopic": false
+  "completedTopic": false,
+  "diagnosis": {{
+    "difficultyDetected": true,
+    "difficulty": "dificultad de conexión al responder",
+    "evidence": "se activó el fallback local por fallo en API",
+    "severity": "media",
+    "status": "en proceso",
+    "recommendation": "reintentar conexión en unos minutos"
+  }},
+  "recommendation": {{
+    "type": "refuerzo",
+    "text": "Intentar responder nuevamente la pregunta anterior."
+  }}
 }}
 """
 

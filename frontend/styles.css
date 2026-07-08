@@ -497,6 +497,126 @@ body.app-layout {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
+
+/* Diagnosis Inline Card */
+.diagnosis-inline-card {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    color: #856404;
+}
+
+.diagnosis-label {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+    color: #b58105;
+}
+
+/* Diagnostico Summary Grid */
+.diagnostico-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.diagnostico-card {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+}
+
+.diagnostico-status {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-top: 10px;
+}
+
+.difficulty-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.difficulty-item {
+    background-color: #fdf3f4;
+    border-left: 4px solid #e74c3c;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.topic-status-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.topic-status-table th,
+.topic-status-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.topic-status-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.status-pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.status-understood {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-weak {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-pending {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+/* Practice Recommendation Card */
+.practice-recommendation-card {
+    background-color: var(--white);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.recommendation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.recommendation-item {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    padding: 15px;
+    border-radius: 6px;
+}
+
+.recommendation-item h5 {
+    margin-bottom: 8px;
+    color: var(--primary-color);
+}
 .enunciado-box {
     background-color: #f8f9fa;
     padding: 15px;
