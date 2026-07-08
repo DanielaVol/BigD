@@ -1,8 +1,8 @@
 import os
 import re
+import time
 from pathlib import Path
 from typing import Optional
-from urllib import response
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,6 +32,7 @@ app.add_middleware(
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
+GEMINI_FALLBACK_MODEL = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash-lite")
 
 MATERIAL_ROOT = Path(
     os.getenv(
@@ -315,7 +316,49 @@ def health():
         "corpus_chunks": len(corpus_chunks),
         "files_configured": [item["path"] for item in CORPUS_FILES],
     }
+def generate_with_retry(client, prompt: str):
+    models_to_try = []
 
+    if GEMINI_MODEL:
+        models_to_try.append(GEMINI_MODEL)
+
+    if GEMINI_FALLBACK_MODEL and GEMINI_FALLBACK_MODEL not in models_to_try:
+        models_to_try.append(GEMINI_FALLBACK_MODEL)
+
+    last_error = None
+
+    for model_name in models_to_try:
+        for attempt in range(3):
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                )
+
+                return response.text, model_name
+
+            except Exception as exc:
+                last_error = exc
+                error_text = str(exc)
+
+                is_temporary_error = (
+                    "503" in error_text
+                    or "UNAVAILABLE" in error_text
+                    or "high demand" in error_text
+                    or "temporarily" in error_text.lower()
+                )
+
+                print(
+                    f"[WARN] Falló Gemini con modelo {model_name}, "
+                    f"intento {attempt + 1}/3: {type(exc).__name__}: {exc}"
+                )
+
+                if not is_temporary_error:
+                    break
+
+                time.sleep(1.5 * (attempt + 1))
+
+    raise last_error
 
 @app.post("/api/tutor")
 def tutor(req: TutorRequest):
@@ -331,16 +374,14 @@ def tutor(req: TutorRequest):
         context = select_relevant_context(req)
         prompt = build_prompt(req, context)
 
-       
-        response = client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=prompt,
-        )
+    
+        answer, model_used = generate_with_retry(client, prompt)
 
         return {
             "ok": True,
-            "answer": response.text,
+            "answer": answer,
             "chunks_loaded": len(corpus_chunks),
+            "model_used": model_used,
         }
        
         
