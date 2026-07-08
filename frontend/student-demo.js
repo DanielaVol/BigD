@@ -95,34 +95,284 @@ function renderInicio(mainContentArea, mainTitle, mainDesc) {
     });
 }
 
+const THEORY_TOPICS = [
+    "variable aleatoria discreta",
+    "función de probabilidad",
+    "función de distribución discreta",
+    "esperanza",
+    "varianza",
+    "Bernoulli",
+    "Binomial",
+    "Geométrica",
+    "Pascal",
+    "Hipergeométrica",
+    "Poisson",
+    "Multinomial",
+    "variables discretas conjuntas",
+    "distribuciones condicionales discretas",
+    "procesos de Poisson básicos"
+];
+
+function getInitialTheoryState() {
+    return {
+        currentTopicIndex: 0,
+        currentTopic: THEORY_TOPICS[0],
+        completedTopics: [],
+        weakTopics: [],
+        understoodTopics: [],
+        conversation: [],
+        lastInteraction: "",
+        mode: "intro"
+    };
+}
+
+function loadTheoryState() {
+    const saved = localStorage.getItem('juntos_theory_state');
+    if (saved) {
+        return JSON.parse(saved);
+    }
+    return getInitialTheoryState();
+}
+
+function saveTheoryState(state) {
+    localStorage.setItem('juntos_theory_state', JSON.stringify(state));
+}
+
 function renderTeoriaGuiada(mainContentArea, mainTitle, mainDesc) {
     mainTitle.textContent = "Teoría guiada: Variables aleatorias discretas";
     mainDesc.textContent = "Unidad 2 - Explicación paso a paso con JUNTOS";
 
     mainContentArea.innerHTML = `
-        <div class="guided-theory-layout">
-            <div class="theory-card">
-                <div class="theory-header">
-                    <span class="section-kicker">Material de la materia</span>
-                    <h2>Variables aleatorias discretas</h2>
-                </div>
-                <div id="guided-theory-content" class="guided-theory-content">
-                    <!-- The dynamic theory response will be injected here -->
+        <div class="interactive-theory-container">
+            <div class="theory-progress-container">
+                <span class="section-kicker">Progreso de la semana</span>
+                <div class="theory-progress" id="theory-progress-chips">
+                    <!-- Chips will be generated here -->
                 </div>
             </div>
-            <div id="theory-chat-container">
-                <!-- The tutor chat will be injected here -->
+
+            <div class="lesson-flow" id="lesson-flow-container">
+                <!-- Conversation flow will be generated here -->
+            </div>
+
+            <div class="lesson-input-panel">
+                <textarea id="lesson-textarea" class="lesson-textarea" rows="2" placeholder="Escribí tu respuesta o duda acá..."></textarea>
+                <button id="btn-lesson-send" class="demo-btn primary">Enviar</button>
+            </div>
+
+            <div class="lesson-actions" id="lesson-actions-container">
+                <!-- Contextual action buttons will go here -->
             </div>
         </div>
     `;
 
-    const chatContainer = document.getElementById("theory-chat-container");
-    addTutorChat(chatContainer);
-
-    // Automatically load the theory without waiting for a user prompt
-    loadInitialGuidedTheory();
+    renderTheoryState();
 }
 
+function renderTheoryState() {
+    const state = loadTheoryState();
+    const progressContainer = document.getElementById("theory-progress-chips");
+    const flowContainer = document.getElementById("lesson-flow-container");
+    const actionsContainer = document.getElementById("lesson-actions-container");
+
+    if (!progressContainer || !flowContainer || !actionsContainer) return;
+
+    // Render Progress Chips
+    progressContainer.innerHTML = THEORY_TOPICS.map((topic, index) => {
+        let chipClass = "topic-chip";
+        if (state.currentTopicIndex === index) chipClass += " active";
+        if (state.completedTopics.includes(topic)) chipClass += " completed";
+        if (state.weakTopics.includes(topic)) chipClass += " weak";
+
+        return `<span class="${chipClass}">[${index + 1} ${topic}]</span>`;
+    }).join("");
+
+    // Render Conversation
+    flowContainer.innerHTML = "";
+    if (state.conversation.length === 0) {
+        // First time initialization
+        const initialTopicsList = THEORY_TOPICS.map((t, i) => `${i + 1}. ${t}`).join("<br>");
+        const initialMessage = `Hola Ana. Esta semana vamos a trabajar estos temas:<br>${initialTopicsList}<br><br>¿Querés que empecemos?`;
+
+        state.conversation.push({ sender: "JUNTOS", text: initialMessage });
+        saveTheoryState(state);
+    }
+
+    state.conversation.forEach(msg => {
+        const msgClass = msg.sender === "JUNTOS" ? "bot" : "user";
+        const msgHtml = `<div class="lesson-message ${msgClass}">
+            <strong>${msg.sender}:</strong>
+            <div class="lesson-message-content">${formatTutorText(msg.text)}</div>
+        </div>`;
+        flowContainer.insertAdjacentHTML("beforeend", msgHtml);
+    });
+
+    // Scroll to bottom
+    flowContainer.scrollTop = flowContainer.scrollHeight;
+
+    // Render Actions based on state mode
+    actionsContainer.innerHTML = "";
+    let actions = [];
+    if (state.mode === "intro") {
+        actions = [
+            { text: "Empezar", onClick: () => sendInteractiveTheoryMessage("Sí, quiero empezar.") },
+            { text: "Repasar anterior", onClick: () => sendInteractiveTheoryMessage("Quiero repasar la semana pasada.") },
+            { text: "Elegir otro tema", onClick: () => sendInteractiveTheoryMessage("Quiero empezar por otro tema.") }
+        ];
+    } else {
+        actions = [
+            { text: "Hacer ejercicio juntos", onClick: () => sendInteractiveTheoryMessage("Quiero hacer un ejercicio juntos sobre este tema.") },
+            { text: "Explicamelo de otra forma", onClick: () => sendInteractiveTheoryMessage("No lo entendí, explicamelo de otra forma.") },
+            { text: "Avanzar", onClick: () => sendInteractiveTheoryMessage("Quiero avanzar al siguiente tema.") }
+        ];
+    }
+
+    actions.forEach(action => {
+        const btn = document.createElement("button");
+        btn.className = "demo-btn small-btn";
+        btn.textContent = action.text;
+        btn.addEventListener("click", action.onClick);
+        actionsContainer.appendChild(btn);
+    });
+
+    // Setup send button
+    const sendBtn = document.getElementById("btn-lesson-send");
+    const textarea = document.getElementById("lesson-textarea");
+
+    // Remove old listeners to avoid duplicates if re-rendered
+    const newSendBtn = sendBtn.cloneNode(true);
+    sendBtn.parentNode.replaceChild(newSendBtn, sendBtn);
+
+    newSendBtn.addEventListener("click", () => {
+        const text = textarea.value.trim();
+        if (text) {
+            textarea.value = "";
+            sendInteractiveTheoryMessage(text);
+        }
+    });
+}
+
+async function sendInteractiveTheoryMessage(userText) {
+    const state = loadTheoryState();
+
+    // Add user message to conversation
+    state.conversation.push({ sender: "Ana", text: userText });
+    state.lastInteraction = userText;
+    saveTheoryState(state);
+
+    // Optimistic render
+    renderTheoryState();
+
+    const flowContainer = document.getElementById("lesson-flow-container");
+    if (flowContainer) {
+        flowContainer.insertAdjacentHTML("beforeend", `<div class="lesson-message bot loading-msg"><strong>JUNTOS:</strong><br><em>Escribiendo...</em></div>`);
+        flowContainer.scrollTop = flowContainer.scrollHeight;
+    }
+
+    try {
+        const systemPrompt = `
+Sos JUNTOS, un tutor AI guiando a Ana paso a paso.
+Estado actual de la lección:
+- Tema actual: ${state.currentTopic}
+- Modo: ${state.mode}
+- Temas vistos: ${state.completedTopics.join(", ") || "ninguno"}
+- Temas flojos: ${state.weakTopics.join(", ") || "ninguno"}
+
+Instrucciones:
+1. Analizá la respuesta o pregunta de Ana.
+2. Respondé de forma interactiva y pedagógica. Si está empezando un tema, presentalo, da un ejemplo y hacé una pregunta breve.
+3. No des una explicación gigante.
+4. Si Ana quiere un ejercicio, propongámosle uno paso a paso sobre ${state.currentTopic}.
+5. Tu respuesta DEBE ser un JSON válido con la siguiente estructura, sin texto extra fuera del JSON:
+{
+  "message": "Tu respuesta para Ana en texto plano o HTML básico (podes usar <br>, <strong>)",
+  "conceptStatus": "understood" | "weak" | "in_progress",
+  "mode": "intro" | "explanation" | "question" | "guided_exercise" | "ready_next",
+  "currentTopic": "${state.currentTopic}",
+  "nextPrompt": "Lo que le preguntas a Ana al final",
+  "completedTopic": true | false
+}
+        `;
+
+        const response = await fetch(TUTOR_API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                studentName: "Ana Torres",
+                currentTopic: state.currentTopic,
+                currentBlock: "Teoría guiada interactiva - " + state.currentTopic,
+                question: systemPrompt + "\n\nRespuesta de Ana: " + userText
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            throw new Error(data.detail || "No se pudo obtener respuesta del tutor.");
+        }
+
+        let aiMessageText = "";
+
+        try {
+            // Intenta extraer JSON si el AI devuelve con blockquotes
+            let rawAnswer = data.answer.trim();
+            if (rawAnswer.startsWith("\`\`\`json")) {
+                rawAnswer = rawAnswer.replace(/\`\`\`json/g, "").replace(/\`\`\`/g, "");
+            }
+            const aiData = JSON.parse(rawAnswer);
+
+            aiMessageText = aiData.message;
+            if (aiData.nextPrompt) {
+                aiMessageText += `<br><br><strong>${aiData.nextPrompt}</strong>`;
+            }
+
+            // Update state from AI data
+            if (aiData.mode) state.mode = aiData.mode;
+
+            if (aiData.conceptStatus === "understood" && !state.understoodTopics.includes(state.currentTopic)) {
+                state.understoodTopics.push(state.currentTopic);
+                state.weakTopics = state.weakTopics.filter(t => t !== state.currentTopic);
+            } else if (aiData.conceptStatus === "weak" && !state.weakTopics.includes(state.currentTopic)) {
+                state.weakTopics.push(state.currentTopic);
+            }
+
+            if (aiData.completedTopic && !state.completedTopics.includes(state.currentTopic)) {
+                state.completedTopics.push(state.currentTopic);
+                // Try to advance index automatically if appropriate
+                if (state.currentTopicIndex < THEORY_TOPICS.length - 1) {
+                    state.currentTopicIndex++;
+                    state.currentTopic = THEORY_TOPICS[state.currentTopicIndex];
+                }
+            }
+
+        } catch (parseError) {
+            // Fallback si no es JSON
+            console.warn("No se pudo parsear como JSON, usando respuesta directa.", parseError);
+            aiMessageText = data.answer;
+            // Basic heuristic to advance mode
+            state.mode = "explanation";
+        }
+
+        // Remove loading
+        document.querySelectorAll(".loading-msg").forEach(e => e.remove());
+
+        // Add AI message to conversation
+        state.conversation.push({ sender: "JUNTOS", text: aiMessageText });
+        saveTheoryState(state);
+
+        // Final render
+        renderTheoryState();
+
+    } catch (error) {
+        console.error(error);
+        document.querySelectorAll(".loading-msg").forEach(e => e.remove());
+        state.conversation.push({ sender: "JUNTOS", text: "No pude conectarme con el tutor IA. Revisá que el backend esté corriendo en http://localhost:8001." });
+        saveTheoryState(state);
+        renderTheoryState();
+    }
+}
 function renderGuiaEjercicios(mainContentArea, mainTitle, mainDesc) {
     mainTitle.textContent = "Guía de ejercicios";
     mainDesc.textContent = "Tema: Intervalos de confianza";
