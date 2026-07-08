@@ -389,7 +389,6 @@ def tutor(req: TutorRequest):
         context = select_relevant_context(req)
         prompt = build_prompt(req, context)
 
-    
         answer, model_used = generate_with_retry(client, prompt)
 
         return {
@@ -398,10 +397,8 @@ def tutor(req: TutorRequest):
             "chunks_loaded": len(corpus_chunks),
             "model_used": model_used,
         }
-       
-        
 
-        except Exception as exc:
+    except Exception as exc:
         print(f"[ERROR] Gemini falló definitivamente: {type(exc).__name__}: {exc}")
 
         fallback_answer = build_local_fallback_answer(req)
