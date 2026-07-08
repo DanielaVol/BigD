@@ -1,0 +1,12 @@
+127.0.0.1 - - [08/Jul/2026 04:23:06] "GET /estudiante.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jul/2026 04:23:06] "GET /styles.css HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jul/2026 04:23:06] "GET /student-demo.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jul/2026 04:23:06] "GET /app-layout.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jul/2026 04:23:06] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jul/2026 04:23:07] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jul/2026 04:24:15] "GET /estudiante.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jul/2026 04:24:15] "GET /styles.css HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jul/2026 04:24:15] "GET /student-demo.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jul/2026 04:24:15] "GET /app-layout.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jul/2026 04:24:15] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jul/2026 04:24:15] "GET /script.js HTTP/1.1" 200 -

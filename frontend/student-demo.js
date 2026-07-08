@@ -96,139 +96,31 @@ function renderInicio(mainContentArea, mainTitle, mainDesc) {
 }
 
 function renderTeoriaGuiada(mainContentArea, mainTitle, mainDesc) {
-    mainTitle.textContent = "Teoría guiada: Intervalos de confianza";
-    mainDesc.textContent = "Basado en: C08 Intervalos de Confianza.pdf";
+    mainTitle.textContent = "Teoría guiada: Variables aleatorias discretas";
+    mainDesc.textContent = "Unidad 2 - Explicación paso a paso con JUNTOS";
 
-    // Setup HTML for blocks. Block 1 is visible, others hidden.
     mainContentArea.innerHTML = `
-        <div id="teoria-container">
-            <!-- Bloque 1 -->
-            <div class="teoria-bloque" id="bloque-1">
-                <h3>¿Qué es estimar un parámetro?</h3>
-                <p>En muchos problemas no conocemos un valor poblacional, como la media real de una población. Entonces usamos una muestra para estimarlo.</p>
-                <div class="pregunta-box">
-                    <p><strong>¿Qué valor suele calcularse a partir de una muestra?</strong></p>
-                    <label><input type="radio" name="p1" value="A"> A. Parámetro poblacional</label><br>
-                    <label><input type="radio" name="p1" value="B"> B. Estimador</label><br>
-                    <label><input type="radio" name="p1" value="C"> C. Nivel de confianza</label><br>
-                    <label><input type="radio" name="p1" value="D"> D. Tabla normal</label><br>
-                    <button class="demo-btn small-btn mt-10" id="btn-p1">Responder</button>
-                    <div id="feedback-p1" class="feedback-msg"></div>
+        <div class="guided-theory-layout">
+            <div class="theory-card">
+                <div class="theory-header">
+                    <span class="section-kicker">Material de la materia</span>
+                    <h2>Variables aleatorias discretas</h2>
+                </div>
+                <div id="guided-theory-content" class="guided-theory-content">
+                    <!-- The dynamic theory response will be injected here -->
                 </div>
             </div>
-
-            <!-- Bloque 2 -->
-            <div class="teoria-bloque hidden" id="bloque-2">
-                <h3>¿Qué es un intervalo de confianza?</h3>
-                <p>Un intervalo de confianza da un rango plausible de valores para un parámetro poblacional, construido a partir de una muestra y un nivel de confianza.</p>
-                <div class="pregunta-box">
-                    <p><strong>¿Qué representa un intervalo de confianza?</strong></p>
-                    <label><input type="radio" name="p2" value="A"> A. Un único valor exacto del parámetro</label><br>
-                    <label><input type="radio" name="p2" value="B"> B. Un rango plausible para el parámetro</label><br>
-                    <label><input type="radio" name="p2" value="C"> C. El tamaño de la muestra</label><br>
-                    <label><input type="radio" name="p2" value="D"> D. La cantidad de errores del ejercicio</label><br>
-                    <button class="demo-btn small-btn mt-10" id="btn-p2">Responder</button>
-                    <div id="feedback-p2" class="feedback-msg"></div>
-                </div>
-            </div>
-
-            <!-- Bloque 3 -->
-            <div class="teoria-bloque hidden" id="bloque-3">
-                <h3>Desvío estándar vs error estándar</h3>
-                <p>El desvío estándar mide variabilidad de los datos. El error estándar mide variabilidad del estimador, por ejemplo de la media muestral. Para una media, se calcula como s / √n.</p>
-                <div class="pregunta-box">
-                    <p><strong>Si s = 12 y n = 36, ¿cuál es el error estándar?</strong></p>
-                    <label><input type="radio" name="p3" value="A"> A. 12</label><br>
-                    <label><input type="radio" name="p3" value="B"> B. 36</label><br>
-                    <label><input type="radio" name="p3" value="C"> C. 12 / √36 = 2</label><br>
-                    <label><input type="radio" name="p3" value="D"> D. 1.96 × 12</label><br>
-                    <button class="demo-btn small-btn mt-10" id="btn-p3">Responder</button>
-                    <div id="feedback-p3" class="feedback-msg"></div>
-                </div>
-            </div>
-
-            <!-- Bloque 4 -->
-            <div class="teoria-bloque hidden" id="bloque-4">
-                <h3>Margen de error</h3>
-                <p>El margen de error se calcula multiplicando el valor crítico por el error estándar.</p>
-                <div class="pregunta-box">
-                    <p><strong>Para un intervalo al 95%, si el valor crítico es 1.96 y el error estándar es 2, ¿cuál es el margen de error?</strong></p>
-                    <label><input type="radio" name="p4" value="A"> A. 1.96</label><br>
-                    <label><input type="radio" name="p4" value="B"> B. 2</label><br>
-                    <label><input type="radio" name="p4" value="C"> C. 3.92</label><br>
-                    <label><input type="radio" name="p4" value="D"> D. 12</label><br>
-                    <button class="demo-btn small-btn mt-10" id="btn-p4">Responder</button>
-                    <div id="feedback-p4" class="feedback-msg"></div>
-                </div>
-            </div>
-
-            <!-- Bloque 5 -->
-            <div class="teoria-bloque hidden" id="bloque-5">
-                <h3>Interpretación</h3>
-                <p>Un intervalo de confianza no significa que haya 95% de probabilidad de que el parámetro esté en ese intervalo particular. Significa que el procedimiento usado para construir intervalos captura el parámetro en el 95% de las muestras, bajo ciertas condiciones.</p>
-                <div class="pregunta-box">
-                    <p><strong>¿Cuál interpretación es más adecuada?</strong></p>
-                    <label><input type="radio" name="p5" value="A"> A. La media poblacional seguro está en el intervalo</label><br>
-                    <label><input type="radio" name="p5" value="B"> B. El intervalo contiene el 95% de los datos</label><br>
-                    <label><input type="radio" name="p5" value="C"> C. Con 95% de confianza, estimamos que la media poblacional está en ese rango</label><br>
-                    <label><input type="radio" name="p5" value="D"> D. El 95% de los alumnos está dentro del intervalo</label><br>
-                    <button class="demo-btn small-btn mt-10" id="btn-p5">Responder</button>
-                    <div id="feedback-p5" class="feedback-msg"></div>
-                </div>
-            </div>
-
-            <!-- Ejemplo guiado -->
-            <div class="teoria-bloque hidden" id="bloque-ejemplo">
-                <h3>Ejemplo guiado</h3>
-                <div class="ejemplo-box">
-                    <p><strong>Ejercicio:</strong> Una muestra de 36 estudiantes tiene media 72 y desvío estándar 12. Construir un intervalo de confianza del 95% para la media poblacional.</p>
-                    <p><strong>Datos:</strong><br>n = 36<br>media muestral = 72<br>s = 12<br>nivel de confianza = 95%</p>
-                    <p><strong>Paso 1:</strong> Identificar que se quiere estimar la media poblacional.</p>
-                    <p><strong>Paso 2:</strong> Calcular el error estándar:<br>s / √n = 12 / √36 = 2</p>
-                    <p><strong>Paso 3:</strong> Usar valor crítico 1.96.</p>
-                    <p><strong>Paso 4:</strong> Calcular margen de error:<br>1.96 × 2 = 3.92</p>
-                    <p><strong>Paso 5:</strong> Construir intervalo:<br>72 ± 3.92 = [68.08 ; 75.92]</p>
-                    <p><strong>Interpretación:</strong> Con un 95% de confianza, se estima que la media poblacional se encuentra entre 68.08 y 75.92.</p>
-                </div>
-                <p style="margin-top: 15px;">Ya completaste la teoría necesaria para empezar la práctica. JUNTOS te recomienda comenzar con ejercicios centrados en error estándar e intervalos para medias.</p>
-                <button id="btn-ir-ejercicios" class="demo-btn primary mt-10">Ir a ejercicios recomendados</button>
+            <div id="theory-chat-container">
+                <!-- The tutor chat will be injected here -->
             </div>
         </div>
     `;
 
-    addTutorChat(mainContentArea);
+    const chatContainer = document.getElementById("theory-chat-container");
+    addTutorChat(chatContainer);
 
-
-    // Logic for blocks
-    const setupBlock = (btnId, radioName, correctVal, nextBlockId, errorMsg) => {
-        const btn = document.getElementById(btnId);
-        btn.addEventListener('click', () => {
-            const selected = document.querySelector(`input[name="${radioName}"]:checked`);
-            const feedback = document.getElementById(`feedback-${radioName}`);
-
-            if (!selected) return;
-
-            if (selected.value === correctVal) {
-                feedback.innerHTML = '<span style="color: green;">¡Correcto!</span>';
-                setTimeout(() => {
-                    document.getElementById(nextBlockId).classList.remove('hidden');
-                }, 1000);
-            } else {
-                if (radioName === 'p3') error_estandar_dificultad = true;
-                feedback.innerHTML = `<span style="color: red;">${errorMsg}</span>`;
-            }
-        });
-    };
-
-    setupBlock('btn-p1', 'p1', 'B', 'bloque-2', 'Un estimador se calcula con datos muestrales y se usa para aproximar un parámetro poblacional.');
-    setupBlock('btn-p2', 'p2', 'B', 'bloque-3', 'Pensá de nuevo. El intervalo da un rango de valores donde creemos que está el parámetro.');
-    setupBlock('btn-p3', 'p3', 'C', 'bloque-4', 'Acá aparece una confusión común: usar el desvío estándar como si fuera el error estándar. El desvío estándar describe la variabilidad de los datos; el error estándar describe la variabilidad de la media muestral.');
-    setupBlock('btn-p4', 'p4', 'C', 'bloque-5', 'Revisá el cálculo. Es 1.96 por 2.');
-    setupBlock('btn-p5', 'p5', 'C', 'bloque-ejemplo', 'Recordá que la confianza es sobre el procedimiento, y nos da un rango de estimación.');
-
-    document.getElementById('btn-ir-ejercicios').addEventListener('click', () => {
-        clickSidebarMenu('guia');
-    });
+    // Automatically load the theory without waiting for a user prompt
+    loadInitialGuidedTheory();
 }
 
 function renderGuiaEjercicios(mainContentArea, mainTitle, mainDesc) {
@@ -459,14 +351,82 @@ function appendTutorMessage(sender, text) {
 
     const messageClass = sender === "Ana" ? "user" : "bot";
 
+    // Usar la lógica nueva de formateo
+    let formattedText = "";
+    if (sender === "Ana") {
+        formattedText = escapeHtml(text).replace(/\n/g, "<br>");
+    } else {
+        formattedText = formatTutorText(text);
+    }
+
     const div = document.createElement("div");
     div.className = `chat-message ${messageClass}`;
-    div.innerHTML = `<strong>${sender}:</strong><br>${text.replace(/\n/g, "<br>")}`;
+    div.innerHTML = `<strong>${sender}:</strong><br>${formattedText}`;
 
     messages.appendChild(div);
     messages.scrollTop = messages.scrollHeight;
 }
 
+
+async function loadInitialGuidedTheory() {
+    const theoryContent = document.getElementById("guided-theory-content");
+    if (!theoryContent) return;
+
+    theoryContent.innerHTML = `
+        <div class="loading-card" id="initial-loading">
+            <div class="spinner"></div>
+            <p>JUNTOS está preparando la explicación inicial...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(TUTOR_API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                studentName: "Ana Torres",
+                currentTopic: "Variables aleatorias discretas",
+                currentBlock: "Teoría guiada inicial",
+                question: "Iniciá la teoría guiada de la unidad Variables aleatorias discretas. Explicá de manera pedagógica, clara y completa. No esperes una pregunta del alumno para empezar. Organizá la explicación en subtemas. Para cada subtema explicá la idea, agregá un ejemplo práctico y hacé una pregunta breve al alumno. No uses Markdown excesivo. No uses blockquotes. No uses separadores tipo ---."
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            throw new Error(data.detail || "Error obteniendo la explicación inicial.");
+        }
+
+        theoryContent.innerHTML = `
+            <div class="theory-response">
+                ${formatTutorText(data.answer)}
+            </div>
+            <div class="theory-actions">
+                <button id="btn-reexplicar" class="demo-btn small-btn tutor-quick">Reexplicar desde el inicio</button>
+                <button id="btn-ir-ejercicios" class="demo-btn primary">Ir a ejercicios obligatorios</button>
+            </div>
+        `;
+
+        document.getElementById("btn-reexplicar").addEventListener("click", () => {
+            loadInitialGuidedTheory();
+        });
+
+        document.getElementById("btn-ir-ejercicios").addEventListener("click", () => {
+            clickSidebarMenu('guia');
+        });
+
+    } catch (error) {
+        console.error(error);
+        theoryContent.innerHTML = `
+            <div class="feedback-msg" style="color: red; text-align: center; margin-top: 20px;">
+                <p>No se pudo conectar con el tutor IA.</p>
+                <button onclick="loadInitialGuidedTheory()" class="demo-btn mt-10">Reintentar</button>
+            </div>
+        `;
+    }
+}
 
 async function sendTutorQuestion(question) {
     const loading = document.getElementById("tutor-loading");
@@ -511,4 +471,57 @@ async function sendTutorQuestion(question) {
             loading.classList.add("hidden");
         }
     }
+}
+
+function escapeHtml(text) {
+    if (!text) return "";
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function formatTutorText(text) {
+    if (!text) return "";
+    let html = escapeHtml(text);
+
+    // Títulos
+    html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+    html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+    // Negritas
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Listas desordenadas con * o -
+    html = html.replace(/^\s*[\*\-] (.*$)/gim, '<ul><li>$1</li></ul>');
+    html = html.replace(/<\/ul>\n<ul>/g, '\n');
+
+    // Listas ordenadas
+    html = html.replace(/^\s*\d+\. (.*$)/gim, '<ol><li>$1</li></ol>');
+    html = html.replace(/<\/ol>\n<ol>/g, '\n');
+
+    // Eliminar blockquotes (escaped as &gt;)
+    html = html.replace(/^&gt; (.*$)/gim, '$1');
+
+    // Eliminar separadores ---
+    html = html.replace(/^---$/gim, '');
+
+    // Saltos de párrafo
+    html = html.replace(/\n\n+/g, '</p><p>');
+
+    // Código inline
+    html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+
+    // Envolver todo en párrafos inicial y final
+    html = '<p>' + html + '</p>';
+
+    // Limpieza final de párrafos vacíos o redundantes generados
+    html = html.replace(/<p><\/p>/g, '');
+    html = html.replace(/<p>\s*<\/p>/g, '');
+    html = html.replace(/<p><\/p>/g, '');
+
+    return html;
 }

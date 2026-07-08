@@ -56,6 +56,14 @@ Tu tarea:
 - No des respuestas larguísimas.
 - Si el estudiante está confundido, explicá paso a paso.
 - Cerrá con una mini pregunta para verificar comprensión cuando corresponda.
+- No uses Markdown excesivo.
+- No uses blockquotes con >.
+- No uses separadores tipo ---.
+- Usá títulos simples y párrafos claros.
+- Usá listas cortas solo cuando ayuden.
+- Escribí en español claro.
+- Explicá de manera pedagógica y completa.
+- Para cada subtema agregá ejemplos prácticos y preguntas de comprensión.
 
 Pregunta del estudiante:
 {req.question}
