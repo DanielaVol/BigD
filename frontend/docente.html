@@ -88,6 +88,38 @@
                 if (welcomeNameEl) welcomeNameEl.textContent = name;
             }
         });
+
+        // Demo logic for teacher alerts
+        window.renderDemoSection = function(target, sectionName, mainContentArea, mainTitle, mainDesc) {
+            if (!mainContentArea || !mainTitle || !mainDesc) return false;
+
+            if (target === 'alertas') {
+                mainTitle.textContent = "Alertas tempranas";
+                mainDesc.textContent = "Estudiantes que requieren intervención docente";
+
+                mainContentArea.innerHTML = `
+                    <div class="diagnostico-section">
+                        <div class="cards-grid" style="grid-template-columns: 1fr;">
+                            <div class="stat-card" style="text-align: left; border-left: 4px solid #f0ad4e;">
+                                <h3>Ana Torres</h3>
+                                <p><strong>Riesgo:</strong> medio</p>
+                                <p><strong>Motivo:</strong> dificultad repetida en identificación de valores posibles</p>
+                                <p><strong>Acción sugerida:</strong> práctica adicional antes del TP1</p>
+                            </div>
+
+                            <div class="stat-card" style="text-align: left; border-left: 4px solid #5cb85c;">
+                                <h3>Diego Pérez</h3>
+                                <p><strong>Riesgo:</strong> bajo</p>
+                                <p><strong>Motivo:</strong> buen avance en teoría, práctica pendiente</p>
+                                <p><strong>Acción sugerida:</strong> iniciar TP1</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return true;
+            }
+            return false;
+        };
     </script>
 </body>
 </html>
