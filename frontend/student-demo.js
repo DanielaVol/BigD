@@ -123,12 +123,46 @@ function renderInicio(mainContentArea, mainTitle, mainDesc) {
         <div style="margin-top: 30px;">
             <button id="btn-comenzar-teoria" class="demo-btn primary">Comenzar teoría guiada</button>
         </div>
+
+        <div class="diagnostico-section mt-20">
+            <h3>Historial de cursada</h3>
+            <div class="cards-grid" style="grid-template-columns: 1fr;">
+                <div class="stat-card" style="text-align: left;">
+                    <h4 style="margin-top:0;">Semana 1 — Probabilidad básica</h4>
+                    <p><strong>Estado:</strong> completada</p>
+                    <button class="demo-btn small-btn btn-historial">Ver resumen</button>
+                </div>
+                <div class="stat-card" style="text-align: left;">
+                    <h4 style="margin-top:0;">Semana 2 — Probabilidad condicional</h4>
+                    <p><strong>Estado:</strong> refuerzo recomendado</p>
+                    <p><strong>Dificultad:</strong> independencia vs probabilidad condicional</p>
+                    <button class="demo-btn small-btn btn-historial">Repasar</button>
+                </div>
+                <div class="stat-card" style="text-align: left;">
+                    <h4 style="margin-top:0;">Semana 3 — Variables aleatorias</h4>
+                    <p><strong>Estado:</strong> completada</p>
+                    <button class="demo-btn small-btn btn-historial">Ver resumen</button>
+                </div>
+                <div class="stat-card" style="text-align: left;">
+                    <h4 style="margin-top:0;">Semana 4 — Variables aleatorias discretas</h4>
+                    <p><strong>Estado:</strong> en curso</p>
+                    <button class="demo-btn small-btn btn-historial">Continuar</button>
+                </div>
+            </div>
+            <div id="msg-historial" class="hidden mt-10" style="padding: 10px; background-color: #eef2f5; border-left: 4px solid var(--accent-color); border-radius: 4px;">
+                En una versión completa, JUNTOS permitiría repasar esta semana con una explicación breve, ejercicios tipo y diagnóstico de temas pendientes.
+            </div>
+        </div>
     `;
-
-
 
     document.getElementById('btn-comenzar-teoria').addEventListener('click', () => {
         clickSidebarMenu('material');
+    });
+
+    document.querySelectorAll('.btn-historial').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('msg-historial').classList.remove('hidden');
+        });
     });
 }
 
@@ -588,27 +622,27 @@ function renderGuiaEjercicios(mainContentArea, mainTitle, mainDesc) {
     mainDesc.textContent = "Ejercicios obligatorios del TP1 y práctica recomendada";
 
     const state = loadTheoryState();
-    const hasRecommendations = (state.detectedDifficulties && state.detectedDifficulties.length > 0) ||
-                               (state.recommendations && state.recommendations.length > 0);
 
-    let recommendedHtml = '';
-    if (hasRecommendations) {
-        let diffsText = state.detectedDifficulties.map(d => d.difficulty).join(", ");
-        recommendedHtml = `
-            <div class="recommended-practice-card">
-                <h3 class="exercise-section-title">Práctica recomendada para Ana</h3>
-                <p>JUNTOS detectó que conviene reforzar: <strong>${diffsText || 'conceptos en proceso'}</strong></p>
-                <button id="btn-resolve-recommended" class="demo-btn primary mt-10">Resolver ejercicio recomendado</button>
+    // Prototipo: Mostramos siempre la recomendación estática solicitada
+    let recommendedHtml = `
+        <div class="recommended-practice-card" style="background-color: #f9fbfc; border: 1px solid #d0d7de; padding: 20px; border-radius: 8px;">
+            <h3 class="exercise-section-title" style="margin-top: 0; color: #1a4f8b;">Práctica recomendada para Ana</h3>
+            <p>JUNTOS detectó que conviene reforzar:</p>
+            <ul style="margin-top: 5px; margin-bottom: 15px; padding-left: 20px;">
+                <li>identificación de valores posibles;</li>
+                <li>diferencia entre variable aleatoria y valores posibles.</li>
+            </ul>
+            <p style="margin-bottom: 15px;">Antes de avanzar con el TP1, se recomienda resolver un ejercicio tipo.</p>
+
+            <div style="background-color: white; border-left: 4px solid #1a4f8b; padding: 10px 15px; margin-bottom: 15px;">
+                <strong>Ejercicio recomendado:</strong><br>
+                Se lanza una moneda dos veces. Sea X = cantidad de caras obtenidas.<br>
+                Indicá qué valores puede tomar X y por qué es discreta.
             </div>
-        `;
-    } else {
-        recommendedHtml = `
-            <div class="recommended-practice-card">
-                <h3 class="exercise-section-title">Práctica recomendada para Ana</h3>
-                <p>Todavía no hay recomendaciones específicas. Avanzá con la teoría guiada para que JUNTOS pueda personalizar tu práctica.</p>
-            </div>
-        `;
-    }
+
+            <button id="btn-resolve-recommended" class="demo-btn primary">Resolver ejercicio recomendado</button>
+        </div>
+    `;
 
     let requiredHtml = REQUIRED_EXERCISES.map((ex, index) => {
         let statusTag = '';
@@ -640,11 +674,9 @@ function renderGuiaEjercicios(mainContentArea, mainTitle, mainDesc) {
         </div>
     `;
 
-    if (hasRecommendations) {
-        document.getElementById('btn-resolve-recommended').addEventListener('click', () => {
-            openExerciseResolver(mainContentArea, mainTitle, mainDesc, RECOMMENDED_EXERCISE);
-        });
-    }
+    document.getElementById('btn-resolve-recommended').addEventListener('click', () => {
+        openExerciseResolver(mainContentArea, mainTitle, mainDesc, RECOMMENDED_EXERCISE);
+    });
 
     document.querySelectorAll('.btn-resolve-required').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -729,6 +761,10 @@ function renderDiagnostico(mainContentArea, mainTitle, mainDesc) {
         ? state.understoodTopics.map(t => `<li>${t}</li>`).join("")
         : "<li>Todavía no hay temas marcados como entendidos.</li>";
 
+    let weakHtml = state.weakTopics.length > 0
+        ? state.weakTopics.map(t => `<li>${t}</li>`).join("")
+        : "<li>Todavía no hay temas marcados como flojos.</li>";
+
     let difficultiesHtml = "";
     if (state.detectedDifficulties && state.detectedDifficulties.length > 0) {
         difficultiesHtml = state.detectedDifficulties.map(d => `
@@ -741,39 +777,6 @@ function renderDiagnostico(mainContentArea, mainTitle, mainDesc) {
     } else {
         difficultiesHtml = "<p>Todavía no hay dificultades detectadas. A medida que interactúes con la teoría guiada, JUNTOS va a actualizar este diagnóstico.</p>";
     }
-
-    let tableRows = THEORY_TOPICS.map(topic => {
-        let status = "Pendiente";
-        let statusClass = "status-pending";
-        let observation = "Todavía no iniciado";
-
-        if (state.understoodTopics.includes(topic)) {
-            status = "Entendido";
-            statusClass = "status-understood";
-            observation = "Fortaleza";
-        } else if (state.weakTopics.includes(topic)) {
-            status = "En proceso";
-            statusClass = "status-weak";
-            const diff = state.detectedDifficulties.find(d => d.topic === topic);
-            observation = diff ? "Dificultad detectada" : "Necesita refuerzo";
-        } else if (state.completedTopics.includes(topic)) {
-            status = "Completado";
-            statusClass = "status-understood";
-            observation = "Finalizado";
-        } else if (state.currentTopic === topic) {
-            status = "En progreso";
-            statusClass = "status-pending";
-            observation = "Tema actual";
-        }
-
-        return `
-            <tr>
-                <td>${topic}</td>
-                <td><span class="status-pill ${statusClass}">${status}</span></td>
-                <td>${observation}</td>
-            </tr>
-        `;
-    }).join("");
 
     mainContentArea.innerHTML = `
         <div class="diagnostico-container">
@@ -789,9 +792,16 @@ function renderDiagnostico(mainContentArea, mainTitle, mainDesc) {
             </div>
 
             <div class="diagnostico-section mt-20">
-                <h3>Fortalezas detectadas</h3>
+                <h3>Temas entendidos</h3>
                 <ul class="strength-list">
                     ${understoodHtml}
+                </ul>
+            </div>
+
+            <div class="diagnostico-section mt-20">
+                <h3>Temas flojos</h3>
+                <ul class="strength-list">
+                    ${weakHtml}
                 </ul>
             </div>
 
@@ -803,19 +813,25 @@ function renderDiagnostico(mainContentArea, mainTitle, mainDesc) {
             </div>
 
             <div class="diagnostico-section mt-20">
-                <h3>Resumen de temas</h3>
-                <table class="topic-status-table mt-10">
-                    <thead>
-                        <tr>
-                            <th>Tema</th>
-                            <th>Estado</th>
-                            <th>Observación</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tableRows}
-                    </tbody>
-                </table>
+                <h3>Historial de cursada resumido</h3>
+                <div class="cards-grid" style="grid-template-columns: 1fr;">
+                    <div class="stat-card" style="text-align: left;">
+                        <h4 style="margin-top:0;">Semana 1 — Probabilidad básica</h4>
+                        <p><strong>Estado:</strong> completada</p>
+                    </div>
+                    <div class="stat-card" style="text-align: left;">
+                        <h4 style="margin-top:0;">Semana 2 — Probabilidad condicional</h4>
+                        <p><strong>Estado:</strong> refuerzo recomendado</p>
+                    </div>
+                    <div class="stat-card" style="text-align: left;">
+                        <h4 style="margin-top:0;">Semana 3 — Variables aleatorias</h4>
+                        <p><strong>Estado:</strong> completada</p>
+                    </div>
+                    <div class="stat-card" style="text-align: left;">
+                        <h4 style="margin-top:0;">Semana 4 — Variables aleatorias discretas</h4>
+                        <p><strong>Estado:</strong> en curso</p>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -875,24 +891,27 @@ function renderGrupos(mainContentArea, mainTitle, mainDesc) {
 
     mainContentArea.innerHTML = `
         <div class="grupo-card">
-            <h3>Grupo: Intervalos para medias</h3>
-            <p><strong>Motivo:</strong> Ana tuvo dificultad en error estándar y margen de error. Este grupo trabaja esos temas con ejercicios similares.</p>
-            <p><strong>Horario:</strong> Jueves 18:00</p>
-            <p><strong>Compañeros:</strong></p>
+            <h3>Grupo sugerido por JUNTOS</h3>
+            <p><strong>Tema:</strong> Variable aleatoria discreta</p>
+            <p><strong>Motivo:</strong> varios estudiantes presentan dificultad para identificar valores posibles.</p>
+            <p><strong>Integrantes sugeridos:</strong></p>
             <ul>
-                <li>Diego Pérez: también necesita reforzar error estándar</li>
-                <li>Camila Ruiz: resolvió bien error estándar y puede explicar</li>
-                <li>Martín Gómez: tiene dificultad en interpretación</li>
-                <li>Ana Torres: recomendada para practicar cálculo e interpretación</li>
+                <li>Ana Torres</li>
+                <li>Diego Pérez</li>
+                <li>Camila Ruiz</li>
+                <li>Martín Gómez</li>
             </ul>
+            <p><strong>Actividad sugerida:</strong></p>
+            <p>Resolver ejercicios tipo sobre variables de conteo.</p>
             <button id="btn-unirse-grupo" class="demo-btn primary mt-10">Unirme al grupo</button>
-            <div id="msg-unirse-grupo" class="success-msg hidden mt-10">Te sumaste al grupo de estudio. JUNTOS va a sugerirles ejercicios de error estándar e intervalos para medias.</div>
+            <div id="msg-unirse-grupo" class="success-msg hidden mt-10" style="padding: 10px; background-color: #eef2f5; border-left: 4px solid var(--accent-color); border-radius: 4px;">
+                Te sumamos al grupo sugerido. En una versión completa, JUNTOS coordinaría la actividad y sugeriría ejercicios compartidos.
+            </div>
         </div>
     `;
 
     document.getElementById('btn-unirse-grupo').addEventListener('click', function() {
         document.getElementById('msg-unirse-grupo').classList.remove('hidden');
-        this.style.display = 'none';
     });
 }
 
