@@ -1034,46 +1034,82 @@ function renderResolverEjercicio(mainContentArea, mainTitle, mainDesc, exercise 
     });
 
     // Send button handler
-    document.getElementById(`btn-enviar-${exercise.id}`).addEventListener('click', () => {
+    document.getElementById(`btn-enviar-${exercise.id}`).addEventListener('click', async () => {
         const input = document.getElementById(`exercise-chat-input-${exercise.id}`);
         const text = input.value.trim();
-        const fileInputElem = document.getElementById(`resolution-file-${exercise.id}`);
-        const hasFile = fileInputElem.files && fileInputElem.files.length > 0;
 
-        if (text || hasFile) {
-            if (text) {
-                addExerciseChatMessage(exercise.id, {
-                    sender: "Ana",
-                    text: text,
-                    type: "message"
-                });
+        let uploadedFileName = null;
+
+        const uploadedNameEl = document.getElementById(`uploaded-file-name-${exercise.id}`);
+        if (uploadedNameEl && uploadedNameEl.textContent.trim()) {
+            uploadedFileName = uploadedNameEl.textContent.trim();
+        }
+
+        const fileInputElem = document.getElementById(`resolution-file-${exercise.id}`);
+        if (!uploadedFileName && fileInputElem.files && fileInputElem.files.length > 0) {
+            uploadedFileName = fileInputElem.files[0].name;
+        }
+
+        if (!text && !uploadedFileName) return;
+
+        if (text) {
+            addExerciseChatMessage(exercise.id, {
+                sender: "Ana",
+                text: text,
+                type: "message"
+            });
+        }
+
+        input.value = "";
+        renderExerciseChat(exercise.id, exercise, mainContentArea, mainTitle, mainDesc);
+
+        if (fileInputElem.files && fileInputElem.files.length > 0) {
+            fileInputElem.value = '';
+        }
+
+        addExerciseChatMessage(exercise.id, {
+            sender: "JUNTOS",
+            text: "Estoy revisando tu consulta sobre este ejercicio...",
+            type: "message",
+            temporary: true
+        });
+
+        renderExerciseChat(exercise.id, exercise, mainContentArea, mainTitle, mainDesc);
+
+        try {
+            const aiResponse = await buildExerciseTutorReply(exercise, text, uploadedFileName);
+
+            let chat = getExerciseChat(exercise.id);
+            chat = chat.filter(msg => !msg.temporary);
+            saveExerciseChat(exercise.id, chat);
+
+            if (aiResponse.statusUpdate) {
+                setExerciseStatus(exercise.id, aiResponse.statusUpdate);
             }
-            input.value = "";
+
+            addExerciseChatMessage(exercise.id, {
+                sender: "JUNTOS",
+                text: aiResponse.message,
+                type: aiResponse.type || "message",
+                extra: aiResponse.extra || null
+            });
+
             renderExerciseChat(exercise.id, exercise, mainContentArea, mainTitle, mainDesc);
 
-            // Clear the file input if one was used
-            if (hasFile) {
-                fileInputElem.value = '';
-            }
+        } catch (error) {
+            console.error(error);
 
-            // Simulate AI response
-            setTimeout(() => {
-                const fileName = hasFile ? fileInputElem.files[0].name : null;
-                const aiResponse = buildExerciseTutorReply(exercise, text, fileName);
+            let chat = getExerciseChat(exercise.id);
+            chat = chat.filter(msg => !msg.temporary);
+            saveExerciseChat(exercise.id, chat);
 
-                if (aiResponse.statusUpdate) {
-                    setExerciseStatus(exercise.id, aiResponse.statusUpdate);
-                }
+            addExerciseChatMessage(exercise.id, {
+                sender: "JUNTOS",
+                text: `No pude consultar al tutor IA en este momento. Como pista para este ejercicio: ${exercise.hint || "identificá primero la variable, sus valores posibles y qué te pide calcular."}`,
+                type: "message"
+            });
 
-                addExerciseChatMessage(exercise.id, {
-                    sender: "JUNTOS",
-                    text: aiResponse.message,
-                    type: aiResponse.type || "message",
-                    extra: aiResponse.extra || null
-                });
-
-                renderExerciseChat(exercise.id, exercise, mainContentArea, mainTitle, mainDesc);
-            }, 1000); // 1 second delay
+            renderExerciseChat(exercise.id, exercise, mainContentArea, mainTitle, mainDesc);
         }
     });
 
@@ -1200,58 +1236,100 @@ function renderExerciseChat(exerciseId, exercise, mainContentArea, mainTitle, ma
     });
 }
 
-function buildExerciseTutorReply(exercise, userText, uploadedFileName) {
-    // Simulated Tutor Logic
-    userText = userText ? userText.toLowerCase() : "";
+async function buildExerciseTutorReply(exercise, userText, uploadedFileName) {
+    const chatHistory = getExerciseChat(exercise.id)
+        .slice(-6)
+        .map(msg => `${msg.sender}: ${msg.text}`)
+        .join("\n");
 
-    if (uploadedFileName) {
-        // Simulated response for a file upload
+    const prompt = `
+Sos JUNTOS, un tutor educativo de Probabilidad y Estadística.
+
+Estás ayudando a Ana a resolver un ejercicio obligatorio de la semana 4: Variables aleatorias discretas.
+
+No estás en teoría guiada general. Estás dentro de la pantalla Resolver ejercicio.
+
+Ejercicio seleccionado:
+${exercise.title}
+
+Tema:
+${exercise.topic}
+
+Dificultad:
+${exercise.difficulty}
+
+Enunciado:
+${exercise.statement}
+
+Pista docente disponible:
+${exercise.hint || "No hay pista cargada."}
+
+Archivo subido:
+${uploadedFileName ? `Ana subió una resolución escrita llamada ${uploadedFileName}. En este prototipo no podés leer el contenido real del archivo, pero podés pedirle que describa el paso donde tiene dudas o usar su mensaje escrito para orientarla.` : "Ana todavía no subió archivo o está haciendo una consulta escrita."}
+
+Historial reciente del chat:
+${chatHistory}
+
+Mensaje actual de Ana:
+${userText || "(Ana no escribió texto adicional.)"}
+
+Reglas:
+1. Respondé específicamente sobre este ejercicio y este enunciado.
+2. No des la respuesta final completa.
+3. No resuelvas todo el ejercicio de punta a punta.
+4. Orientá con preguntas, pistas y explicación del error.
+5. Si Ana pregunta “cómo empiezo”, ayudala a identificar qué representa la variable y qué datos tiene.
+6. Si Ana pregunta por fórmulas, explicá cuál corresponde y por qué, sin hacer todo el cálculo final.
+7. Si Ana parece confundida, señalá el concepto que conviene revisar.
+8. Si Ana subió archivo pero no escribió una duda concreta, decile que en el prototipo no podés leer todo el archivo y pedile que te indique qué paso quiere revisar.
+9. Si hay una dificultad clara, sugerí un ejercicio adicional del mismo tipo.
+10. Si la respuesta parece bien encaminada, decile que está bien orientada y proponé el siguiente paso.
+11. Escribí en español claro.
+12. No uses HTML.
+13. No uses Markdown excesivo.
+`;
+
+    try {
+        const response = await fetch(TUTOR_API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                studentName: "Ana Torres",
+                currentTopic: exercise.topic,
+                currentBlock: "Resolución guiada de ejercicio",
+                question: prompt
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            return {
+                message: data.answer,
+                type: "message",
+                statusUpdate: "en_revision",
+                extra: null
+            };
+        }
+        throw new Error("Backend no devolvió ok");
+    } catch (e) {
         return {
-            message: "Revisé la resolución que subiste. La estructura general está bien encaminada: identificaste la variable y empezaste a listar los valores posibles.\n\nEl punto a revisar es que parece faltar un valor posible. En variables que cuentan ocurrencias, muchas veces el 0 también puede aparecer.\n\nAntes de avanzar, revisá esta pregunta:\n¿Existe algún caso en el que no ocurra ningún éxito?",
-            type: "feedback",
+            message: `Estoy teniendo una demora para consultar al tutor IA, pero puedo ayudarte con una pista sobre este ejercicio.
+
+Este ejercicio trata sobre ${exercise.topic}.
+
+Enunciado:
+${exercise.statement}
+
+Para avanzar, revisá primero esto:
+${exercise.hint || "Identificá qué representa la variable, qué valores puede tomar y qué te pide calcular."}`,
+            type: "message",
             statusUpdate: "en_revision",
             extra: null
         };
     }
-
-    if (userText.includes("no entiendo") || userText.includes("ayuda") || userText.includes("pista")) {
-        return {
-            message: "Pensá X como una cantidad. No mires todavía las probabilidades. Primero listá todos los resultados posibles del experimento y después calculá qué valor toma X en cada uno.",
-            type: "message",
-            extra: null
-        };
-    }
-
-    if (userText.includes("0, 1, 2") || userText.includes("0, 1, 2, 3") || userText.includes("bien") || userText.includes("listo") || userText.includes("resuelto")) {
-        return {
-             message: "Tu resolución está bien encaminada. Marcamos este ejercicio como resuelto.\n\nPróximo paso:\nPodés pasar al siguiente ejercicio obligatorio o sumarte a un grupo para ayudar a compañeros que están reforzando este tema.",
-             type: "feedback",
-             statusUpdate: "resuelto",
-             extra: {
-                 groupSuggestion: true,
-                 nextExercise: true
-             }
-        };
-    }
-
-    if (userText.includes("error") || userText.includes("mal")) {
-        return {
-            message: "Todavía no marcaría este ejercicio como resuelto.\n\nDificultad detectada:\nNo identifica todos los valores posibles.\n\nRecomendación:\nAntes de volver a intentarlo, te propongo resolver un ejercicio adicional del mismo tipo.",
-            type: "feedback",
-            statusUpdate: "requiere_refuerzo",
-            extra: {
-                additionalExercise: true,
-                groupSuggestion: true
-            }
-        };
-    }
-
-    // Default response
-    return {
-        message: "¡Entendido! Revisá tu procedimiento con cuidado. Acordate que podés subir una foto de tu resolución escrita o preguntarme una duda más concreta para que te oriente mejor.",
-        type: "message",
-        extra: null
-    };
 }
 
 function renderDiagnostico(mainContentArea, mainTitle, mainDesc) {
