@@ -284,6 +284,33 @@ body {
     overflow: hidden;
 }
 
+.selected-week-badge {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.9rem;
+}
+.selected-week-badge .week-badge-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-light);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+.selected-week-badge strong {
+    color: var(--primary-color);
+    font-size: 1.05rem;
+}
+.selected-week-badge span:last-child {
+    color: var(--text-main);
+    display: block;
+}
+
 .app-sidebar {
     width: 250px;
     background-color: var(--white);

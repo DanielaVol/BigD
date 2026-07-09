@@ -42,15 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainDesc = document.getElementById('main-desc');
     const mainContentArea = document.getElementById('main-content-area');
 
-    // Guardar el contenido original (dashboard/panel inicial)
-    let initialContentHTML = '';
-    if (mainContentArea) {
-        initialContentHTML = mainContentArea.innerHTML;
-    }
-
-    const initialTitle = mainTitle ? mainTitle.textContent : '';
-    const initialDesc = mainDesc ? mainDesc.textContent : '';
-
     menuItems.forEach(item => {
         item.addEventListener('click', function() {
             // Remover 'active' de todos
@@ -66,30 +57,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 return; // Demo handled rendering
             }
 
-            if (target === 'inicio') {
-                // Volver a la vista inicial
-                if (mainTitle) mainTitle.textContent = initialTitle;
-                if (mainDesc) mainDesc.textContent = initialDesc;
-                if (mainContentArea) mainContentArea.innerHTML = initialContentHTML;
-            } else {
-                // Mostrar vista placeholder
-                if (mainTitle) mainTitle.textContent = sectionName;
-                if (mainDesc) mainDesc.textContent = `Estás en la sección: ${sectionName}`;
+            // Fallback for placeholder view
+            if (mainTitle) mainTitle.textContent = sectionName;
+            if (mainDesc) mainDesc.textContent = `Estás en la sección: ${sectionName}`;
 
-                if (mainContentArea) {
-                    mainContentArea.innerHTML = `
-                        <div class="placeholder-view">
-                            <h2>${sectionName}</h2>
-                            <p>Esta sección está en desarrollo para la demo.</p>
-                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-top: 20px;">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                            </svg>
-                        </div>
-                    `;
-                }
+            if (mainContentArea) {
+                mainContentArea.innerHTML = `
+                    <div class="placeholder-view">
+                        <h2>${sectionName}</h2>
+                        <p>Esta sección está en desarrollo para la demo.</p>
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-top: 20px;">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                `;
             }
         });
     });
+
+    // Automatically trigger "Inicio" on load if renderDemoSection is present
+    if (window.renderDemoSection) {
+        const inicioItem = Array.from(menuItems).find(i => i.dataset.target === 'inicio');
+        if (inicioItem) {
+            inicioItem.click();
+        }
+    }
 });
