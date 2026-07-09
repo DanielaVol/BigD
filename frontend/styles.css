@@ -1111,3 +1111,132 @@ body.app-layout {
     flex-wrap: wrap;
     gap: 10px;
 }
+
+/* New Exercise Guide Styles */
+.exercise-card {
+    background: var(--white);
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.exercise-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+
+.exercise-meta {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 12px;
+}
+
+.resolver-card {
+    background-color: var(--white);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+}
+
+.exercise-statement-box {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-left: 4px solid var(--accent-color);
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.resolution-upload-card {
+    background-color: #f0f4f8;
+    border: 1px dashed #b0bec5;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.uploaded-file-card {
+    background-color: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.exercise-chat-container {
+    background-color: #f9fbfc;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.exercise-chat-message {
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    max-width: 85%;
+    line-height: 1.5;
+}
+
+.exercise-chat-message.bot {
+    background-color: #eef2f5;
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
+}
+
+.exercise-chat-message.user {
+    background-color: var(--primary-color);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 0;
+    margin-left: auto;
+}
+
+.exercise-chat-feedback {
+    background-color: #fff3e0;
+    border-left: 4px solid #ff9800;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+}
+
+.exercise-chat-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.additional-exercise-card {
+    background-color: white;
+    border: 1px solid #bbdefb;
+    border-left: 4px solid #2196f3;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 10px 0;
+}
+
+.group-suggestion-card {
+    background-color: #e8eaf6;
+    border: 1px solid #c5cae9;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 10px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.status-pendiente { background-color: #f5f5f5; color: #616161; border: 1px solid #e0e0e0; }
+.status-en_revision { background-color: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+.status-resuelto { background-color: #e8f5e9; color: #1b5e20; border: 1px solid #c8e6c9; }
+.status-requiere_refuerzo { background-color: #ffebee; color: #b71c1c; border: 1px solid #ffcdd2; }

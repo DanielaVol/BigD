@@ -106,33 +106,103 @@ function updateSelectedWeekBadge() {
 
 const REQUIRED_EXERCISES = [
     {
-      id: "tp1-2-2",
-      title: "Ejercicio 2.2",
-      topic: "Función de distribución discreta",
-      difficulty: "Baja",
-      status: "Pendiente",
-      statement: "Sea X una variable aleatoria con función de probabilidad P(X=x) = kx para x = 1, 2, 3, 4. Calcular el valor de k y la función de distribución.",
-      hint: "Primero identificá qué valores puede tomar la variable. Acordate que la suma de las probabilidades debe ser 1."
+        id: "tp1-1",
+        title: "Ejercicio 1",
+        topic: "Variable aleatoria discreta",
+        difficulty: "Baja",
+        status: "Pendiente",
+        statement: `Se lanza una moneda equilibrada 3 veces. Sea X la cantidad de caras obtenidas.\na) Definir el conjunto de valores posibles de X.\nb) Explicar por qué X es una variable aleatoria discreta.`,
+        hint: "Pensá en todos los resultados posibles al lanzar 3 monedas y contá las caras en cada caso.",
+        additionalRecommendation: "Ejercicios adicionales sobre identificación de valores posibles."
     },
     {
-      id: "tp1-2-3",
-      title: "Ejercicio 2.3",
-      topic: "Función de probabilidad / extracciones",
-      difficulty: "Media",
-      status: "Pendiente",
-      statement: "De una urna con 5 bolas rojas y 3 azules se extraen 2 bolas. Sea X = cantidad de bolas rojas extraídas. Hallar la función de probabilidad de X.",
-      hint: "Pensá si las extracciones son con o sin reposición. ¿Qué valores puede tomar X?"
+        id: "tp1-2",
+        title: "Ejercicio 2",
+        topic: "Función de probabilidad",
+        difficulty: "Baja",
+        status: "Pendiente",
+        statement: "Sea X una variable aleatoria con función de probabilidad P(X=x) = kx para x = 1, 2, 3, 4. Calcular el valor de k.",
+        hint: "Acordate que la suma de todas las probabilidades debe dar 1.",
+        additionalRecommendation: "Ejercicios adicionales sobre función de probabilidad."
     },
     {
-      id: "tp1-2-4",
-      title: "Ejercicio 2.4",
-      topic: "Geométrica / Pascal",
-      difficulty: "Media",
-      status: "Pendiente",
-      statement: "Un tirador tiene probabilidad 0.8 de dar en el blanco. ¿Cuál es la probabilidad de que necesite exactamente 3 tiros para acertar 2 veces?",
-      hint: "Esta es una distribución de Pascal (o binomial negativa). ¿Cuáles son los parámetros?"
+        id: "tp1-3",
+        title: "Ejercicio 3",
+        topic: "Función de distribución discreta",
+        difficulty: "Media",
+        status: "Pendiente",
+        statement: "Dada la variable aleatoria X del ejercicio anterior, calcular su función de distribución acumulada F(x) para todo x.",
+        hint: "F(x) = P(X <= x). Recordá que es una función escalonada.",
+        additionalRecommendation: "Ejercicios adicionales sobre función de distribución."
+    },
+    {
+        id: "tp1-4",
+        title: "Ejercicio 4",
+        topic: "Esperanza",
+        difficulty: "Media",
+        status: "Pendiente",
+        statement: "Calcular la esperanza matemática E(X) de la variable aleatoria del Ejercicio 2.",
+        hint: "E(X) = suma de x * P(X=x) para todos los x.",
+        additionalRecommendation: "Ejercicios adicionales sobre esperanza matemática."
+    },
+    {
+        id: "tp1-5",
+        title: "Ejercicio 5",
+        topic: "Varianza",
+        difficulty: "Media",
+        status: "Pendiente",
+        statement: "Calcular la varianza V(X) de la variable aleatoria del Ejercicio 2.",
+        hint: "V(X) = E(X^2) - (E(X))^2. Calculá primero E(X^2).",
+        additionalRecommendation: "Ejercicios adicionales sobre varianza."
+    },
+    {
+        id: "tp1-6",
+        title: "Ejercicio 6",
+        topic: "Bernoulli / Binomial",
+        difficulty: "Media",
+        status: "Pendiente",
+        statement: "Un tirador tiene probabilidad 0.8 de dar en el blanco. Si realiza 5 tiros independientes, ¿cuál es la probabilidad de que acierte exactamente 3 veces?",
+        hint: "Pensá si se cumplen las condiciones para una distribución Binomial. ¿Cuáles son los parámetros n y p?",
+        additionalRecommendation: "Ejercicios adicionales sobre distribución Binomial."
+    },
+    {
+        id: "tp1-7",
+        title: "Ejercicio 7",
+        topic: "Geométrica / Pascal",
+        difficulty: "Alta",
+        status: "Pendiente",
+        statement: "El mismo tirador del ejercicio anterior sigue tirando hasta acertar por primera vez. ¿Cuál es la probabilidad de que necesite exactamente 3 tiros?",
+        hint: "Esta es una distribución Geométrica. Representa la cantidad de fracasos antes del primer éxito (o tiros hasta el primer éxito).",
+        additionalRecommendation: "Ejercicios adicionales sobre distribución Geométrica."
+    },
+    {
+        id: "tp1-8",
+        title: "Ejercicio 8",
+        topic: "Poisson",
+        difficulty: "Media",
+        status: "Pendiente",
+        statement: "El número de llamadas que recibe una central telefónica sigue una distribución de Poisson con un promedio de 3 llamadas por minuto. ¿Cuál es la probabilidad de recibir exactamente 5 llamadas en un minuto dado?",
+        hint: "Usá la fórmula de la distribución de Poisson con lambda = 3.",
+        additionalRecommendation: "Ejercicios adicionales sobre distribución de Poisson."
     }
 ];
+
+
+function getExerciseStatuses() {
+    const statuses = localStorage.getItem('juntos_exercise_status');
+    return statuses ? JSON.parse(statuses) : {};
+}
+
+function setExerciseStatus(exerciseId, status) {
+    const statuses = getExerciseStatuses();
+    statuses[exerciseId] = status;
+    localStorage.setItem('juntos_exercise_status', JSON.stringify(statuses));
+}
+
+function getExerciseStatus(exerciseId) {
+    const statuses = getExerciseStatuses();
+    return statuses[exerciseId] || "pendiente";
+}
 
 const RECOMMENDED_EXERCISE = {
     id: "rec-valores-posibles",
@@ -777,20 +847,35 @@ function renderGuiaEjercicios(mainContentArea, mainTitle, mainDesc) {
             </div>
         `;
 
-        let requiredHtml = REQUIRED_EXERCISES.map((ex, index) => {
+                let requiredHtml = REQUIRED_EXERCISES.map((ex, index) => {
+            const currentStatus = getExerciseStatus(ex.id);
             let statusTag = '';
-            if (ex.status === 'Pendiente') statusTag = '<span class="tag tag-pend">Pendiente</span>';
-            else if (ex.status === 'Resuelto') statusTag = '<span class="tag tag-res">Resuelto</span>';
-            else statusTag = `<span class="tag">${ex.status}</span>`;
+            let statusDisplay = currentStatus;
+
+            if (currentStatus === 'pendiente') {
+                statusTag = '<span class="tag status-pendiente">Pendiente</span>';
+                statusDisplay = 'Pendiente';
+            } else if (currentStatus === 'resuelto') {
+                statusTag = '<span class="tag status-resuelto">Resuelto</span>';
+                statusDisplay = 'Resuelto';
+            } else if (currentStatus === 'en_revision') {
+                statusTag = '<span class="tag status-en_revision">En revisión</span>';
+                statusDisplay = 'En revisión';
+            } else if (currentStatus === 'requiere_refuerzo') {
+                statusTag = '<span class="tag status-requiere_refuerzo">Requiere refuerzo</span>';
+                statusDisplay = 'Requiere refuerzo';
+            } else {
+                statusTag = `<span class="tag status-pendiente">${currentStatus}</span>`;
+            }
 
             return `
                 <div class="exercise-card">
                     <div class="exercise-card-header">
                         <strong>${ex.title}</strong>
-                        ${statusTag}
                     </div>
                     <div class="exercise-meta">
-                        Tema: ${ex.topic} | Dificultad: ${ex.difficulty}
+                        Tema: ${ex.topic} <br>
+                        Estado: ${statusTag}
                     </div>
                     <div class="exercise-actions mt-10">
                         <button class="demo-btn small-btn btn-resolve-required" data-index="${index}">Resolver ejercicio</button>
@@ -865,46 +950,308 @@ function renderResolverEjercicio(mainContentArea, mainTitle, mainDesc, exercise 
         <div class="resolver-container resolver-card">
             <div class="resolver-header">
                 <h3>${exercise.title}</h3>
+                <div class="exercise-meta">Tema: ${exercise.topic}</div>
             </div>
-            <div class="enunciado-box">
-                <p>${exercise.statement.replace(/\n/g, '<br>')}</p>
+
+            <div class="mt-20">
+                <strong>Enunciado:</strong>
+                <div class="exercise-statement-box mt-10">
+                    <p>${exercise.statement.replace(/\n/g, '<br>')}</p>
+                </div>
             </div>
-            <textarea id="resolucion-text" class="resolucion-textarea" rows="6" placeholder="Escribí tu resolución acá..."></textarea>
-            <div class="resolver-actions mt-10">
-                <button id="btn-pista" class="demo-btn secondary">Pedir pista</button>
-                <button id="btn-enviar" class="demo-btn primary">Enviar resolución</button>
-                <button id="btn-volver-guia" class="demo-btn secondary back-to-guide-btn">Volver a guía</button>
+
+            <div class="mt-20">
+                <strong>Tu resolución:</strong>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Subí una foto, PDF o archivo con tu resolución escrita.</p>
+
+                <div class="resolution-upload-card" id="upload-container-${exercise.id}">
+                    <input type="file" id="resolution-file-${exercise.id}" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                    <button class="demo-btn secondary" onclick="document.getElementById('resolution-file-${exercise.id}').click()">
+                        Seleccionar archivo
+                    </button>
+                    <p style="font-size: 0.8rem; color: #888; margin-top: 10px;">Archivos aceptados: PDF, JPG, PNG.</p>
+                </div>
+
+                <div id="uploaded-file-container-${exercise.id}" class="hidden">
+                    <div class="uploaded-file-card">
+                        <span style="font-size: 1.5rem;">📄</span>
+                        <div>
+                            <strong>Archivo cargado:</strong><br>
+                            <span id="uploaded-file-name-${exercise.id}"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div id="pista-msg" class="pista-msg hidden mt-10">
-                ${exercise.hint}
+
+            <div class="exercise-chat-container mt-20">
+                <strong>Chat con JUNTOS:</strong>
+                <div id="exercise-chat-messages-${exercise.id}" style="max-height: 400px; overflow-y: auto; margin-top: 15px; margin-bottom: 15px; padding-right: 10px;">
+                    <!-- Chat messages will be rendered here -->
+                </div>
+
+                <div class="chat-input-row mt-10">
+                    <textarea id="exercise-chat-input-${exercise.id}" class="resolucion-textarea" rows="3" placeholder="Escribí una duda, pedí una pista o contale a JUNTOS qué parte no entendés..."></textarea>
+                </div>
+
+                <div class="exercise-chat-actions">
+                    <button id="btn-enviar-${exercise.id}" class="demo-btn primary">Enviar al tutor</button>
+                    <button id="btn-pista-${exercise.id}" class="demo-btn secondary">Pedir pista</button>
+                    <button id="btn-volver-guia-${exercise.id}" class="demo-btn secondary">Volver a guía</button>
+                </div>
             </div>
-            <div id="feedback-resolucion" class="mt-20 feedback-ai-card"></div>
         </div>
     `;
 
-    document.getElementById('btn-volver-guia').addEventListener('click', () => {
+    document.getElementById(`btn-volver-guia-${exercise.id}`).addEventListener('click', () => {
         renderGuiaEjercicios(mainContentArea, mainTitle, mainDesc);
     });
 
-    document.getElementById('btn-pista').addEventListener('click', () => {
-        document.getElementById('pista-msg').classList.remove('hidden');
+    document.getElementById(`btn-pista-${exercise.id}`).addEventListener('click', () => {
+        const input = document.getElementById(`exercise-chat-input-${exercise.id}`);
+        input.value = "Necesito una pista para empezar.";
     });
 
-    document.getElementById('btn-enviar').addEventListener('click', () => {
-        const text = document.getElementById('resolucion-text').value.toLowerCase();
-        const feedbackContainer = document.getElementById('feedback-resolucion');
+    // File upload handler
+    const fileInput = document.getElementById(`resolution-file-${exercise.id}`);
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const fileName = e.target.files[0].name;
+            document.getElementById(`upload-container-${exercise.id}`).classList.add('hidden');
 
-        // Simulated AI Feedback
-        feedbackContainer.innerHTML = `
-            <div class="feedback-card" style="background-color: #eef2f5; border-left: 4px solid var(--accent-color);">
-                <h4>Feedback de JUNTOS</h4>
-                <p><strong>Lo que hiciste bien:</strong> Planteaste bien la idea general de los valores.</p>
-                <p><strong>Punto a revisar:</strong> Fijate si no te falta algún valor posible (por ejemplo, el 0).</p>
-                <p><strong>Dificultad detectada:</strong> No identifica todos los valores posibles.</p>
-                <p><strong>Próximo paso recomendado:</strong> Revisá tu respuesta y agregá el valor faltante antes de continuar.</p>
+            const uploadedContainer = document.getElementById(`uploaded-file-container-${exercise.id}`);
+            uploadedContainer.classList.remove('hidden');
+            document.getElementById(`uploaded-file-name-${exercise.id}`).textContent = fileName;
+
+            // Add file message to chat state
+            addExerciseChatMessage(exercise.id, {
+                sender: "Ana",
+                text: `Ana subió una resolución escrita: ${fileName}`,
+                type: "message",
+                is_file: true
+            });
+            renderExerciseChat(exercise.id, exercise, mainContentArea, mainTitle, mainDesc);
+        }
+    });
+
+    // Send button handler
+    document.getElementById(`btn-enviar-${exercise.id}`).addEventListener('click', () => {
+        const input = document.getElementById(`exercise-chat-input-${exercise.id}`);
+        const text = input.value.trim();
+        const fileInputElem = document.getElementById(`resolution-file-${exercise.id}`);
+        const hasFile = fileInputElem.files && fileInputElem.files.length > 0;
+
+        if (text || hasFile) {
+            if (text) {
+                addExerciseChatMessage(exercise.id, {
+                    sender: "Ana",
+                    text: text,
+                    type: "message"
+                });
+            }
+            input.value = "";
+            renderExerciseChat(exercise.id, exercise, mainContentArea, mainTitle, mainDesc);
+
+            // Clear the file input if one was used
+            if (hasFile) {
+                fileInputElem.value = '';
+            }
+
+            // Simulate AI response
+            setTimeout(() => {
+                const fileName = hasFile ? fileInputElem.files[0].name : null;
+                const aiResponse = buildExerciseTutorReply(exercise, text, fileName);
+
+                if (aiResponse.statusUpdate) {
+                    setExerciseStatus(exercise.id, aiResponse.statusUpdate);
+                }
+
+                addExerciseChatMessage(exercise.id, {
+                    sender: "JUNTOS",
+                    text: aiResponse.message,
+                    type: aiResponse.type || "message",
+                    extra: aiResponse.extra || null
+                });
+
+                renderExerciseChat(exercise.id, exercise, mainContentArea, mainTitle, mainDesc);
+            }, 1000); // 1 second delay
+        }
+    });
+
+    // Initial chat render
+    renderExerciseChat(exercise.id, exercise, mainContentArea, mainTitle, mainDesc);
+}
+
+function getExerciseChat(exerciseId) {
+    const chatKey = `juntos_exercise_chat_${exerciseId}`;
+    const chatStr = localStorage.getItem(chatKey);
+    if (chatStr) {
+        return JSON.parse(chatStr);
+    }
+
+    // Default initial message
+    return [
+        {
+            sender: "JUNTOS",
+            text: "Subí tu resolución escrita o contame en qué paso te trabaste. Voy a ayudarte a revisar el procedimiento sin darte la respuesta directa.",
+            type: "message"
+        }
+    ];
+}
+
+function saveExerciseChat(exerciseId, chat) {
+    const chatKey = `juntos_exercise_chat_${exerciseId}`;
+    localStorage.setItem(chatKey, JSON.stringify(chat));
+}
+
+function addExerciseChatMessage(exerciseId, message) {
+    const chat = getExerciseChat(exerciseId);
+    chat.push(message);
+    saveExerciseChat(exerciseId, chat);
+}
+
+function renderExerciseChat(exerciseId, exercise, mainContentArea, mainTitle, mainDesc) {
+    const container = document.getElementById(`exercise-chat-messages-${exerciseId}`);
+    if (!container) return;
+
+    const chat = getExerciseChat(exerciseId);
+    let html = "";
+
+    chat.forEach((msg, idx) => {
+        const msgClass = msg.sender === "JUNTOS" ? "bot" : "user";
+
+        let contentHtml = msg.text.replace(/\n/g, '<br>');
+
+        if (msg.type === "feedback") {
+            contentHtml = `
+                <div class="exercise-chat-feedback">
+                    ${contentHtml}
+                </div>
+            `;
+        }
+
+        if (msg.extra && msg.extra.additionalExercise) {
+            contentHtml += `
+                <div class="additional-exercise-card">
+                    <h4>Ejercicio adicional recomendado</h4>
+                    <p><strong>Tema:</strong> valores posibles de una variable discreta</p>
+                    <p><strong>Objetivo:</strong> reforzar identificación del conjunto de valores posibles.</p>
+                    <div style="background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 4px;">
+                        <strong>Enunciado:</strong><br>
+                        Se lanza un dado dos veces. Sea X = cantidad de veces que sale un número par.<br>
+                        Indicá qué valores puede tomar X.
+                    </div>
+                    <button class="demo-btn small-btn btn-additional-ex" data-id="${exerciseId}" data-msg-idx="${idx}">Resolver ejercicio adicional</button>
+                </div>
+            `;
+        }
+
+        if (msg.extra && msg.extra.groupSuggestion) {
+            contentHtml += `
+                <div class="group-suggestion-card">
+                    <button class="demo-btn primary btn-join-group" data-id="${exerciseId}" data-msg-idx="${idx}">Unirme al grupo</button>
+                </div>
+            `;
+        }
+
+        if (msg.extra && msg.extra.nextExercise) {
+             contentHtml += `
+                 <button class="demo-btn small-btn btn-next-ex mt-10" data-id="${exerciseId}" data-msg-idx="${idx}">Resolver siguiente ejercicio</button>
+             `;
+        }
+
+        html += `
+            <div class="exercise-chat-message ${msgClass}">
+                <strong>${msg.sender}:</strong><br>
+                ${contentHtml}
             </div>
         `;
     });
+
+    container.innerHTML = html;
+    container.scrollTop = container.scrollHeight;
+
+    // Add event listeners for dynamic buttons inside chat
+    document.querySelectorAll('.btn-additional-ex').forEach(btn => {
+        btn.addEventListener('click', () => {
+             const addEx = {
+                id: "add-1",
+                title: "Ejercicio Adicional",
+                topic: "Variable aleatoria discreta",
+                difficulty: "Baja",
+                status: "Pendiente",
+                statement: "Se lanza un dado dos veces. Sea X = cantidad de veces que sale un número par.\nIndicá qué valores puede tomar X.",
+                hint: "Contá cuántos pares pueden salir en 2 lanzamientos."
+            };
+            renderResolverEjercicio(mainContentArea, mainTitle, mainDesc, addEx);
+        });
+    });
+
+    document.querySelectorAll('.btn-join-group').forEach(btn => {
+        btn.addEventListener('click', () => {
+             localStorage.setItem("juntos_joined_group", "true");
+             clickSidebarMenu('grupos');
+        });
+    });
+
+    document.querySelectorAll('.btn-next-ex').forEach(btn => {
+        btn.addEventListener('click', () => {
+            renderGuiaEjercicios(mainContentArea, mainTitle, mainDesc);
+        });
+    });
+}
+
+function buildExerciseTutorReply(exercise, userText, uploadedFileName) {
+    // Simulated Tutor Logic
+    userText = userText ? userText.toLowerCase() : "";
+
+    if (uploadedFileName) {
+        // Simulated response for a file upload
+        return {
+            message: "Revisé la resolución que subiste. La estructura general está bien encaminada: identificaste la variable y empezaste a listar los valores posibles.\n\nEl punto a revisar es que parece faltar un valor posible. En variables que cuentan ocurrencias, muchas veces el 0 también puede aparecer.\n\nAntes de avanzar, revisá esta pregunta:\n¿Existe algún caso en el que no ocurra ningún éxito?",
+            type: "feedback",
+            statusUpdate: "en_revision",
+            extra: null
+        };
+    }
+
+    if (userText.includes("no entiendo") || userText.includes("ayuda") || userText.includes("pista")) {
+        return {
+            message: "Pensá X como una cantidad. No mires todavía las probabilidades. Primero listá todos los resultados posibles del experimento y después calculá qué valor toma X en cada uno.",
+            type: "message",
+            extra: null
+        };
+    }
+
+    if (userText.includes("0, 1, 2") || userText.includes("0, 1, 2, 3") || userText.includes("bien") || userText.includes("listo") || userText.includes("resuelto")) {
+        return {
+             message: "Tu resolución está bien encaminada. Marcamos este ejercicio como resuelto.\n\nPróximo paso:\nPodés pasar al siguiente ejercicio obligatorio o sumarte a un grupo para ayudar a compañeros que están reforzando este tema.",
+             type: "feedback",
+             statusUpdate: "resuelto",
+             extra: {
+                 groupSuggestion: true,
+                 nextExercise: true
+             }
+        };
+    }
+
+    if (userText.includes("error") || userText.includes("mal")) {
+        return {
+            message: "Todavía no marcaría este ejercicio como resuelto.\n\nDificultad detectada:\nNo identifica todos los valores posibles.\n\nRecomendación:\nAntes de volver a intentarlo, te propongo resolver un ejercicio adicional del mismo tipo.",
+            type: "feedback",
+            statusUpdate: "requiere_refuerzo",
+            extra: {
+                additionalExercise: true,
+                groupSuggestion: true
+            }
+        };
+    }
+
+    // Default response
+    return {
+        message: "¡Entendido! Revisá tu procedimiento con cuidado. Acordate que podés subir una foto de tu resolución escrita o preguntarme una duda más concreta para que te oriente mejor.",
+        type: "message",
+        extra: null
+    };
 }
 
 function renderDiagnostico(mainContentArea, mainTitle, mainDesc) {
@@ -1017,49 +1364,77 @@ function renderGrupos(mainContentArea, mainTitle, mainDesc) {
     mainTitle.textContent = `Grupos de estudio — Semana ${currentWeek.number}`;
     mainDesc.textContent = "Grupos sugeridos según tu desempeño";
 
+    const joinedGroup = localStorage.getItem("juntos_joined_group") === "true";
+
     let tema = currentWeek.topicLabel || currentWeek.title;
     let motivo = "varios estudiantes presentan dificultad similar.";
     let actividad = "Resolver ejercicios de la guía juntos.";
 
     if (currentWeek.id === "semana-4") {
-        tema = "Variable aleatoria discreta";
-        motivo = "varios estudiantes presentan dificultad para identificar valores posibles.";
-        actividad = "Resolver ejercicios tipo sobre variables de conteo.";
-    } else if (currentWeek.id === "semana-2") {
-        motivo = "varios estudiantes presentan dudas sobre independencia y probabilidad condicional.";
-        actividad = "Revisar ejemplos de extracción con y sin reposición.";
+        tema = "Variables aleatorias discretas";
+        motivo = "Reforzar identificación de valores posibles y función de probabilidad.";
+        actividad = "Resolver ejercicios tipo sobre variables de conteo y comparar estrategias.";
     }
 
-    mainContentArea.innerHTML = `
-        <div class="grupo-card">
-            <h3>Grupo sugerido por JUNTOS</h3>
-            <p><strong>Tema:</strong> ${tema}</p>
-            <p><strong>Motivo:</strong> ${motivo}</p>
-            <p><strong>Integrantes sugeridos:</strong></p>
-            <ul>
-                <li>Ana Torres</li>
-                <li>Diego Pérez</li>
-                <li>Camila Ruiz</li>
-                <li>Martín Gómez</li>
-            </ul>
-            <p><strong>Actividad sugerida:</strong></p>
-            <p>${actividad}</p>
-            <button id="btn-unirse-grupo" class="demo-btn primary mt-10">Unirme al grupo</button>
-            <div id="msg-unirse-grupo" class="success-msg hidden mt-10" style="padding: 10px; background-color: #eef2f5; border-left: 4px solid var(--accent-color); border-radius: 4px;">
-                Te sumamos al grupo sugerido. En una versión completa, JUNTOS coordinaría la actividad y sugeriría ejercicios compartidos.
-            </div>
+    if (joinedGroup) {
+        mainContentArea.innerHTML = `
+            <div class="grupo-card" style="background-color: #e8f5e9; border: 1px solid #c8e6c9;">
+                <h3 style="color: #1b5e20;">Ya estás inscripta en este grupo de estudio.</h3>
+                <p><strong>Grupo:</strong><br>${tema}</p>
+                <p><strong>Objetivo:</strong><br>${motivo}</p>
+                <p><strong>Integrantes:</strong></p>
+                <ul style="padding-left: 20px;">
+                    <li>Ana Torres</li>
+                    <li>Diego Pérez</li>
+                    <li>Camila Ruiz</li>
+                    <li>Martín Gómez</li>
+                </ul>
+                <p><strong>Actividad sugerida:</strong><br>${actividad}</p>
 
-            ${currentWeek.id !== 'semana-4' ? `
-            <div style="margin-top: 30px;">
-                <button id="btn-volver-semana4-grupos" class="demo-btn">Volver a Semana 4</button>
+                ${currentWeek.id !== 'semana-4' ? `
+                <div style="margin-top: 30px;">
+                    <button id="btn-volver-semana4-grupos" class="demo-btn">Volver a Semana 4</button>
+                </div>
+                ` : ''}
             </div>
-            ` : ''}
-        </div>
-    `;
+        `;
+    } else {
+        mainContentArea.innerHTML = `
+            <div class="grupo-card">
+                <h3>Grupo sugerido por JUNTOS</h3>
+                <p><strong>Tema:</strong> ${tema}</p>
+                <p><strong>Objetivo:</strong> ${motivo}</p>
+                <p><strong>Integrantes sugeridos:</strong></p>
+                <ul style="padding-left: 20px;">
+                    <li>Ana Torres</li>
+                    <li>Diego Pérez</li>
+                    <li>Camila Ruiz</li>
+                    <li>Martín Gómez</li>
+                </ul>
+                <p><strong>Actividad sugerida:</strong></p>
+                <p>${actividad}</p>
+                <button id="btn-unirse-grupo" class="demo-btn primary mt-10">Unirme al grupo</button>
+                <div id="msg-unirse-grupo" class="success-msg hidden mt-10" style="padding: 10px; background-color: #eef2f5; border-left: 4px solid var(--accent-color); border-radius: 4px;">
+                    Ana fue sumada al grupo sugerido para reforzar Variables aleatorias discretas.
+                </div>
 
-    document.getElementById('btn-unirse-grupo').addEventListener('click', function() {
-        document.getElementById('msg-unirse-grupo').classList.remove('hidden');
-    });
+                ${currentWeek.id !== 'semana-4' ? `
+                <div style="margin-top: 30px;">
+                    <button id="btn-volver-semana4-grupos" class="demo-btn">Volver a Semana 4</button>
+                </div>
+                ` : ''}
+            </div>
+        `;
+
+        document.getElementById('btn-unirse-grupo').addEventListener('click', function() {
+            localStorage.setItem("juntos_joined_group", "true");
+            document.getElementById('btn-unirse-grupo').classList.add('hidden');
+            document.getElementById('msg-unirse-grupo').classList.remove('hidden');
+            setTimeout(() => {
+                renderGrupos(mainContentArea, mainTitle, mainDesc);
+            }, 1500);
+        });
+    }
 
     const btnVolver = document.getElementById('btn-volver-semana4-grupos');
     if (btnVolver) {
@@ -1069,7 +1444,6 @@ function renderGrupos(mainContentArea, mainTitle, mainDesc) {
         });
     }
 }
-
 function renderConsultas(mainContentArea, mainTitle, mainDesc) {
     const currentWeek = getSelectedWeek();
     mainTitle.textContent = `Consultas — Semana ${currentWeek.number}`;
