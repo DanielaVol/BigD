@@ -292,23 +292,49 @@ body {
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
     font-size: 0.9rem;
 }
-.selected-week-badge .week-badge-label {
+.week-badge-label {
     font-size: 0.75rem;
     text-transform: uppercase;
     color: var(--text-light);
     font-weight: bold;
     letter-spacing: 0.5px;
 }
-.selected-week-badge strong {
-    color: var(--primary-color);
-    font-size: 1.05rem;
-}
-.selected-week-badge span:last-child {
+.week-selector {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 0.9rem;
     color: var(--text-main);
-    display: block;
+}
+.week-badge-topic {
+    font-size: 0.85rem;
+    color: var(--text-main);
+    font-style: italic;
+}
+.week-summary-card {
+    background: white;
+    padding: 20px;
+    border-radius: 6px;
+    border-left: 4px solid var(--accent-color);
+    box-shadow: var(--card-shadow);
+}
+.week-summary-card h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+.week-demo-note {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1px solid #ffeeba;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
 }
 
 .app-sidebar {

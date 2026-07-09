@@ -8,38 +8,45 @@ const COURSE_WEEKS = [
     id: "semana-1",
     number: 1,
     title: "Probabilidad básica",
-    status: "completada",
+    status: "Completada",
     summary: "Conceptos iniciales de probabilidad, espacio muestral, eventos y operaciones.",
-    topicLabel: "Probabilidad básica",
-    demoAvailable: false
+    theoryStatus: "Completada",
+    recommendedExercises: 0,
+    mainDifficulty: "Sin dificultad pendiente",
+    groupSuggestion: "No requerido"
   },
   {
     id: "semana-2",
     number: 2,
     title: "Probabilidad condicional",
-    status: "refuerzo recomendado",
+    status: "Refuerzo recomendado",
     summary: "Probabilidad condicional, independencia y regla del producto.",
-    difficulty: "independencia vs probabilidad condicional",
-    topicLabel: "Probabilidad condicional",
-    demoAvailable: false
+    theoryStatus: "Refuerzo recomendado",
+    recommendedExercises: 2,
+    mainDifficulty: "Independencia vs probabilidad condicional",
+    groupSuggestion: "Grupo de repaso sugerido"
   },
   {
     id: "semana-3",
     number: 3,
     title: "Variables aleatorias",
-    status: "completada",
+    status: "Completada",
     summary: "Definición de variable aleatoria, interpretación y ejemplos.",
-    topicLabel: "Variables aleatorias",
-    demoAvailable: false
+    theoryStatus: "Completada",
+    recommendedExercises: 0,
+    mainDifficulty: "Sin dificultad pendiente",
+    groupSuggestion: "No requerido"
   },
   {
     id: "semana-4",
     number: 4,
     title: "Variables aleatorias discretas",
-    status: "en curso",
-    summary: "Variable aleatoria discreta, función de probabilidad, distribución, esperanza, varianza y modelos discretos.",
-    topicLabel: "Variables aleatorias discretas",
-    demoAvailable: true
+    status: "En curso",
+    summary: "Variable aleatoria discreta, función de probabilidad, función de distribución, esperanza, varianza y modelos discretos.",
+    theoryStatus: "En progreso",
+    recommendedExercises: 1,
+    mainDifficulty: "Identificación de valores posibles",
+    groupSuggestion: "jueves 18:00"
   }
 ];
 
@@ -59,12 +66,41 @@ function getSelectedWeek() {
 function updateSelectedWeekBadge() {
     const week = getSelectedWeek();
     const badge = document.getElementById("selected-week-badge");
-    if (badge) {
-        badge.innerHTML = `
-            <span class="week-badge-label">Semana seleccionada</span>
-            <strong>Semana ${week.number}</strong>
-            <span>${week.title}</span>
-        `;
+    if (!badge) return;
+
+    badge.innerHTML = `
+        <div class="week-badge-label">Semana seleccionada</div>
+        <select id="week-selector" class="week-selector">
+            ${COURSE_WEEKS.map(w => `
+                <option value="${w.id}" ${w.id === week.id ? "selected" : ""}>
+                    Semana ${w.number} — ${w.title}
+                </option>
+            `).join("")}
+        </select>
+        <div class="week-badge-topic">${week.status}</div>
+    `;
+
+    const selector = document.getElementById("week-selector");
+
+    if (selector) {
+        selector.addEventListener("change", (e) => {
+            setSelectedWeekId(e.target.value);
+            updateSelectedWeekBadge();
+
+            const activeItem = document.querySelector(".sidebar-menu li.active");
+            const target = activeItem ? activeItem.dataset.target : "inicio";
+
+            const mainContentArea = document.getElementById("main-content-area");
+            const mainTitle = document.getElementById("main-title");
+            const mainDesc = document.getElementById("main-desc");
+
+            // IMPORTANTE:
+            // Por ahora solo re-renderizar Inicio cuando cambia la semana.
+            // No actualizar teoría, guía, diagnóstico ni grupos por semana.
+            if (target === "inicio" && window.renderDemoSection) {
+                window.renderDemoSection("inicio", "Inicio", mainContentArea, mainTitle, mainDesc);
+            }
+        });
     }
 }
 
@@ -165,54 +201,56 @@ function clickSidebarMenu(targetName) {
 
 function renderInicio(mainContentArea, mainTitle, mainDesc) {
     updateSelectedWeekBadge();
-    const currentWeek = getSelectedWeek();
+    const week = getSelectedWeek();
 
     mainTitle.textContent = "Panel de cursada";
-    mainDesc.innerHTML = `Hola, Ana Torres. Elegí la semana que querés revisar o continuá con la semana actual.`;
+    mainDesc.innerHTML = `Hola, Ana Torres. Este es tu resumen de la semana seleccionada.`;
 
-    let weeksCardsHTML = '';
-    COURSE_WEEKS.forEach(week => {
-        const isSelected = week.id === currentWeek.id;
-        const btnText = isSelected ? "Seleccionada" : "Seleccionar";
-        const btnClass = isSelected ? "demo-btn small-btn primary" : "demo-btn small-btn";
-
-        let extraInfo = '';
-        if (week.difficulty) {
-            extraInfo = `<p><strong>Dificultad:</strong> ${week.difficulty}</p>`;
-        }
-
-        weeksCardsHTML += `
-            <div class="stat-card" style="text-align: left; ${isSelected ? 'border: 2px solid var(--primary-color);' : ''}">
-                <h4 style="margin-top:0;">Semana ${week.number} — ${week.title}</h4>
-                <p><strong>Estado:</strong> ${week.status}</p>
-                ${extraInfo}
-                <button class="btn-select-week ${btnClass}" data-week="${week.id}">${btnText}</button>
+    let demoNote = '';
+    if (week.id !== "semana-4") {
+        demoNote = `
+            <div class="week-demo-note">
+                En este prototipo, la demo interactiva completa está implementada para Semana 4. Las semanas anteriores se muestran como ejemplo de navegación del producto.
             </div>
         `;
-    });
+    }
 
     mainContentArea.innerHTML = `
-        <div class="diagnostico-section">
-            <h3>Semana seleccionada:</h3>
-            <div class="stat-card" style="text-align: left; background-color: #f8f9fa;">
-                <h3 style="margin-top:0; color: var(--primary-color);">Semana ${currentWeek.number} — ${currentWeek.title}</h3>
-                <p><strong>Estado:</strong> ${currentWeek.status}</p>
-                <div style="margin-top: 15px; background: white; padding: 15px; border-radius: 6px; border-left: 4px solid var(--accent-color);">
-                    <strong>Resumen:</strong><br>
-                    ${currentWeek.summary}
-                </div>
-                <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button id="btn-ir-teoria" class="demo-btn primary">Ver teoría de esta semana</button>
-                    <button id="btn-ir-guia" class="demo-btn">Ver guía</button>
-                    <button id="btn-ir-diag" class="demo-btn">Ver diagnóstico</button>
-                </div>
+        ${demoNote}
+        <div class="cards-grid">
+            <div class="stat-card">
+                <div class="stat-card-title">Semana seleccionada</div>
+                <div class="stat-card-value">Semana ${week.number}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-title">Tema</div>
+                <div class="stat-card-value" style="font-size: 1.2rem;">${week.title}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-title">Estado de teoría</div>
+                <div class="stat-card-value" style="font-size: 1.2rem;">${week.theoryStatus}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-title">Ejercicios recomendados</div>
+                <div class="stat-card-value">${week.recommendedExercises}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-title">Dificultad detectada</div>
+                <div class="stat-card-value" style="font-size: 1.1rem;">${week.mainDifficulty}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-title">Grupo sugerido</div>
+                <div class="stat-card-value" style="font-size: 1.2rem;">${week.groupSuggestion}</div>
             </div>
         </div>
 
-        <div class="diagnostico-section mt-20">
-            <h3>Elegir otra semana:</h3>
-            <div class="cards-grid" style="grid-template-columns: 1fr;">
-                ${weeksCardsHTML}
+        <div class="week-summary-card mt-20">
+            <h3>Resumen de la semana</h3>
+            <p>${week.summary}</p>
+            <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button id="btn-ir-teoria" class="demo-btn primary">Continuar teoría guiada</button>
+                <button id="btn-ir-guia" class="demo-btn">Ver guía de ejercicios</button>
+                <button id="btn-ir-diag" class="demo-btn">Ver diagnóstico</button>
             </div>
         </div>
     `;
@@ -227,14 +265,6 @@ function renderInicio(mainContentArea, mainTitle, mainDesc) {
 
     document.getElementById('btn-ir-diag').addEventListener('click', () => {
         clickSidebarMenu('diagnostico');
-    });
-
-    document.querySelectorAll('.btn-select-week').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const weekId = e.target.getAttribute('data-week');
-            setSelectedWeekId(weekId);
-            renderInicio(mainContentArea, mainTitle, mainDesc);
-        });
     });
 }
 
@@ -878,106 +908,60 @@ function renderResolverEjercicio(mainContentArea, mainTitle, mainDesc, exercise 
 }
 
 function renderDiagnostico(mainContentArea, mainTitle, mainDesc) {
-    const currentWeek = getSelectedWeek();
-    mainTitle.textContent = `Mi diagnóstico — Semana ${currentWeek.number}`;
-    mainDesc.textContent = currentWeek.title;
+    mainTitle.textContent = `Mi diagnóstico — Semana 4`;
+    mainDesc.textContent = "Variables aleatorias discretas";
 
-    if (currentWeek.id === "semana-4") {
-        const state = loadTheoryState();
+    const state = loadTheoryState();
 
-        let stateGeneral = "En proceso";
-        if (state.completedTopics.length > 0 || state.understoodTopics.length > 0) {
-            stateGeneral = state.weakTopics.length > 0 ? "En proceso" : "Avanzado";
-        }
-
-        let difficultyHtml = "";
-        let recommendationHtml = "Resolver un ejercicio tipo sobre valores posibles antes de avanzar al TP1.";
-        let evidenceHtml = "Respondió 1 y 2 cuando también era posible 0.";
-
-        if (state.detectedDifficulties && state.detectedDifficulties.length > 0) {
-            const latestDiff = state.detectedDifficulties[state.detectedDifficulties.length - 1];
-            difficultyHtml = latestDiff.difficulty;
-            evidenceHtml = latestDiff.evidence;
-            recommendationHtml = latestDiff.recommendation;
-        } else {
-            difficultyHtml = "No identifica todos los valores posibles";
-        }
-
-        mainContentArea.innerHTML = `
-            <div class="diagnostico-container" style="max-width: 800px;">
-                <div style="background-color: white; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
-
-                    <div style="padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="margin: 0;">Estado de la semana</h3>
-                        <span class="tag" style="background-color: #e3f2fd; color: #1565c0; font-weight: bold;">${stateGeneral}</span>
-                    </div>
-
-                    <div style="padding: 20px; border-bottom: 1px solid #eee; background-color: #fdf3f4;">
-                        <h4 style="margin-top: 0; color: #d32f2f;">Dificultad principal detectada</h4>
-                        <p style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">${difficultyHtml}</p>
-                        <p style="color: #666; margin-top: 0; font-size: 0.95rem;"><strong>Evidencia:</strong> ${evidenceHtml}</p>
-                    </div>
-
-                    <div style="padding: 20px; border-bottom: 1px solid #eee; background-color: #e8f5e9;">
-                        <h4 style="margin-top: 0; color: #2e7d32;">Recomendación de JUNTOS</h4>
-                        <p style="margin-bottom: 0;">${recommendationHtml}</p>
-                    </div>
-
-                    <div style="padding: 20px;">
-                        <h4 style="margin-top: 0;">Próximos pasos sugeridos:</h4>
-                        <ol style="margin-bottom: 0; padding-left: 20px;">
-                            <li style="margin-bottom: 8px;">Repasar el ejemplo de moneda dos veces.</li>
-                            <li style="margin-bottom: 8px;">Resolver el ejercicio recomendado en la Guía.</li>
-                            <li>Volver a intentar un ejercicio obligatorio.</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        `;
-    } else {
-        let diffText = "";
-        let recText = "";
-
-        if (currentWeek.id === "semana-2") {
-            diffText = "Independencia vs probabilidad condicional";
-            recText = "Repasar cuándo P(A|B) cambia respecto de P(A).";
-        } else {
-            diffText = "No se registraron dificultades importantes.";
-            recText = "Avanzar con la siguiente unidad.";
-        }
-
-        mainContentArea.innerHTML = `
-            <div class="diagnostico-container" style="max-width: 800px;">
-                <div style="background-color: white; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
-
-                    <div style="padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="margin: 0;">Estado</h3>
-                        <span class="tag" style="background-color: #f5f5f5; color: #333; font-weight: bold; text-transform: capitalize;">${currentWeek.status}</span>
-                    </div>
-
-                    <div style="padding: 20px; border-bottom: 1px solid #eee;">
-                        <h4 style="margin-top: 0; color: #1a4f8b;">Dificultad registrada</h4>
-                        <p style="font-size: 1.05rem; margin-bottom: 0;">${diffText}</p>
-                    </div>
-
-                    <div style="padding: 20px; background-color: #f8f9fa;">
-                        <h4 style="margin-top: 0; color: #333;">Recomendación</h4>
-                        <p style="margin-bottom: 0;">${recText}</p>
-                    </div>
-
-                </div>
-
-                <div style="margin-top: 30px;">
-                    <button id="btn-volver-semana4-diag" class="demo-btn primary">Volver a Semana 4 para ver demo funcional</button>
-                </div>
-            </div>
-        `;
-
-        document.getElementById('btn-volver-semana4-diag').addEventListener('click', () => {
-            setSelectedWeekId("semana-4");
-            clickSidebarMenu('diagnostico');
-        });
+    let stateGeneral = "En proceso";
+    if (state.completedTopics.length > 0 || state.understoodTopics.length > 0) {
+        stateGeneral = state.weakTopics.length > 0 ? "En proceso" : "Avanzado";
     }
+
+    let difficultyHtml = "";
+    let recommendationHtml = "Resolver un ejercicio tipo sobre valores posibles antes de avanzar al TP1.";
+    let evidenceHtml = "Respondió 1 y 2 cuando también era posible 0.";
+
+    if (state.detectedDifficulties && state.detectedDifficulties.length > 0) {
+        const latestDiff = state.detectedDifficulties[state.detectedDifficulties.length - 1];
+        difficultyHtml = latestDiff.difficulty;
+        evidenceHtml = latestDiff.evidence;
+        recommendationHtml = latestDiff.recommendation;
+    } else {
+        difficultyHtml = "No identifica todos los valores posibles";
+    }
+
+    mainContentArea.innerHTML = `
+        <div class="diagnostico-container" style="max-width: 800px;">
+            <div style="background-color: white; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+
+                <div style="padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0;">Estado de la semana</h3>
+                    <span class="tag" style="background-color: #e3f2fd; color: #1565c0; font-weight: bold;">${stateGeneral}</span>
+                </div>
+
+                <div style="padding: 20px; border-bottom: 1px solid #eee; background-color: #fdf3f4;">
+                    <h4 style="margin-top: 0; color: #d32f2f;">Dificultad principal detectada</h4>
+                    <p style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">${difficultyHtml}</p>
+                    <p style="color: #666; margin-top: 0; font-size: 0.95rem;"><strong>Evidencia:</strong> ${evidenceHtml}</p>
+                </div>
+
+                <div style="padding: 20px; border-bottom: 1px solid #eee; background-color: #e8f5e9;">
+                    <h4 style="margin-top: 0; color: #2e7d32;">Recomendación de JUNTOS</h4>
+                    <p style="margin-bottom: 0;">${recommendationHtml}</p>
+                </div>
+
+                <div style="padding: 20px;">
+                    <h4 style="margin-top: 0;">Próximos pasos sugeridos:</h4>
+                    <ol style="margin-bottom: 0; padding-left: 20px;">
+                        <li style="margin-bottom: 8px;">Repasar el ejemplo de moneda dos veces.</li>
+                        <li style="margin-bottom: 8px;">Resolver el ejercicio recomendado en la Guía.</li>
+                        <li>Volver a intentar un ejercicio obligatorio.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function renderPractica(mainContentArea, mainTitle, mainDesc) {
