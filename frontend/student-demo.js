@@ -3,6 +3,71 @@ let error_estandar_dificultad = false;
 
 const TUTOR_API_URL = "http://localhost:8001/api/tutor";
 
+const COURSE_WEEKS = [
+  {
+    id: "semana-1",
+    number: 1,
+    title: "Probabilidad básica",
+    status: "completada",
+    summary: "Conceptos iniciales de probabilidad, espacio muestral, eventos y operaciones.",
+    topicLabel: "Probabilidad básica",
+    demoAvailable: false
+  },
+  {
+    id: "semana-2",
+    number: 2,
+    title: "Probabilidad condicional",
+    status: "refuerzo recomendado",
+    summary: "Probabilidad condicional, independencia y regla del producto.",
+    difficulty: "independencia vs probabilidad condicional",
+    topicLabel: "Probabilidad condicional",
+    demoAvailable: false
+  },
+  {
+    id: "semana-3",
+    number: 3,
+    title: "Variables aleatorias",
+    status: "completada",
+    summary: "Definición de variable aleatoria, interpretación y ejemplos.",
+    topicLabel: "Variables aleatorias",
+    demoAvailable: false
+  },
+  {
+    id: "semana-4",
+    number: 4,
+    title: "Variables aleatorias discretas",
+    status: "en curso",
+    summary: "Variable aleatoria discreta, función de probabilidad, distribución, esperanza, varianza y modelos discretos.",
+    topicLabel: "Variables aleatorias discretas",
+    demoAvailable: true
+  }
+];
+
+function getSelectedWeekId() {
+    return localStorage.getItem("juntos_selected_week") || "semana-4";
+}
+
+function setSelectedWeekId(weekId) {
+    localStorage.setItem("juntos_selected_week", weekId);
+}
+
+function getSelectedWeek() {
+    const selectedId = getSelectedWeekId();
+    return COURSE_WEEKS.find(w => w.id === selectedId) || COURSE_WEEKS[3];
+}
+
+function updateSelectedWeekBadge() {
+    const week = getSelectedWeek();
+    const badge = document.getElementById("selected-week-badge");
+    if (badge) {
+        badge.innerHTML = `
+            <span class="week-badge-label">Semana seleccionada</span>
+            <strong>Semana ${week.number}</strong>
+            <span>${week.title}</span>
+        `;
+    }
+}
+
 const REQUIRED_EXERCISES = [
     {
       id: "tp1-2-2",
@@ -50,10 +115,16 @@ window.renderDemoSection = function(target, sectionName, mainContentArea, mainTi
     // We only override specific sections, others can fallback to default placeholder
     if (['inicio', 'material', 'guia', 'diagnostico', 'grupos', 'consultas'].includes(target)) {
         renderSectionContent(target, sectionName, mainContentArea, mainTitle, mainDesc);
+        updateSelectedWeekBadge();
         return true;
     }
     return false;
 };
+
+// Update badge on load
+document.addEventListener('DOMContentLoaded', () => {
+    updateSelectedWeekBadge();
+});
 
 function renderSectionContent(target, sectionName, mainContentArea, mainTitle, mainDesc) {
     // Clear and set basic title/desc
@@ -76,6 +147,9 @@ function renderSectionContent(target, sectionName, mainContentArea, mainTitle, m
         case 'grupos':
             renderGrupos(mainContentArea, mainTitle, mainDesc);
             break;
+        case 'consultas':
+            renderConsultas(mainContentArea, mainTitle, mainDesc);
+            break;
     }
 }
 
@@ -90,78 +164,76 @@ function clickSidebarMenu(targetName) {
 }
 
 function renderInicio(mainContentArea, mainTitle, mainDesc) {
-    mainTitle.textContent = "Panel de práctica";
-    mainDesc.innerHTML = `Hola, Ana Torres. Esta semana vamos a trabajar Intervalos de confianza.<br><br>Antes de resolver la guía, JUNTOS te propone repasar los conceptos clave con explicaciones breves, ejemplos y preguntas de comprensión.`;
+    updateSelectedWeekBadge();
+    const currentWeek = getSelectedWeek();
+
+    mainTitle.textContent = "Panel de cursada";
+    mainDesc.innerHTML = `Hola, Ana Torres. Elegí la semana que querés revisar o continuá con la semana actual.`;
+
+    let weeksCardsHTML = '';
+    COURSE_WEEKS.forEach(week => {
+        const isSelected = week.id === currentWeek.id;
+        const btnText = isSelected ? "Seleccionada" : "Seleccionar";
+        const btnClass = isSelected ? "demo-btn small-btn primary" : "demo-btn small-btn";
+
+        let extraInfo = '';
+        if (week.difficulty) {
+            extraInfo = `<p><strong>Dificultad:</strong> ${week.difficulty}</p>`;
+        }
+
+        weeksCardsHTML += `
+            <div class="stat-card" style="text-align: left; ${isSelected ? 'border: 2px solid var(--primary-color);' : ''}">
+                <h4 style="margin-top:0;">Semana ${week.number} — ${week.title}</h4>
+                <p><strong>Estado:</strong> ${week.status}</p>
+                ${extraInfo}
+                <button class="btn-select-week ${btnClass}" data-week="${week.id}">${btnText}</button>
+            </div>
+        `;
+    });
 
     mainContentArea.innerHTML = `
-        <div class="cards-grid">
-            <div class="stat-card">
-                <div class="stat-card-title">Semana actual</div>
-                <div class="stat-card-value">Semana 4</div>
+        <div class="diagnostico-section">
+            <h3>Semana seleccionada:</h3>
+            <div class="stat-card" style="text-align: left; background-color: #f8f9fa;">
+                <h3 style="margin-top:0; color: var(--primary-color);">Semana ${currentWeek.number} — ${currentWeek.title}</h3>
+                <p><strong>Estado:</strong> ${currentWeek.status}</p>
+                <div style="margin-top: 15px; background: white; padding: 15px; border-radius: 6px; border-left: 4px solid var(--accent-color);">
+                    <strong>Resumen:</strong><br>
+                    ${currentWeek.summary}
+                </div>
+                <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button id="btn-ir-teoria" class="demo-btn primary">Ver teoría de esta semana</button>
+                    <button id="btn-ir-guia" class="demo-btn">Ver guía</button>
+                    <button id="btn-ir-diag" class="demo-btn">Ver diagnóstico</button>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-card-title">Tema actual</div>
-                <div class="stat-card-value" style="font-size: 1.2rem;">Intervalos de confianza</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-card-title">Estado de teoría</div>
-                <div class="stat-card-value">En progreso</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-card-title">Ejercicios recomendados</div>
-                <div class="stat-card-value">8</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-card-title">Dificultad detectada</div>
-                <div class="stat-card-value" style="font-size: 1.1rem; color: #e74c3c;">Error estándar</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-card-title">Grupo sugerido</div>
-                <div class="stat-card-value" style="font-size: 1.2rem;">jueves 18:00</div>
-            </div>
-        </div>
-        <div style="margin-top: 30px;">
-            <button id="btn-comenzar-teoria" class="demo-btn primary">Comenzar teoría guiada</button>
         </div>
 
         <div class="diagnostico-section mt-20">
-            <h3>Historial de cursada</h3>
+            <h3>Elegir otra semana:</h3>
             <div class="cards-grid" style="grid-template-columns: 1fr;">
-                <div class="stat-card" style="text-align: left;">
-                    <h4 style="margin-top:0;">Semana 1 — Probabilidad básica</h4>
-                    <p><strong>Estado:</strong> completada</p>
-                    <button class="demo-btn small-btn btn-historial">Ver resumen</button>
-                </div>
-                <div class="stat-card" style="text-align: left;">
-                    <h4 style="margin-top:0;">Semana 2 — Probabilidad condicional</h4>
-                    <p><strong>Estado:</strong> refuerzo recomendado</p>
-                    <p><strong>Dificultad:</strong> independencia vs probabilidad condicional</p>
-                    <button class="demo-btn small-btn btn-historial">Repasar</button>
-                </div>
-                <div class="stat-card" style="text-align: left;">
-                    <h4 style="margin-top:0;">Semana 3 — Variables aleatorias</h4>
-                    <p><strong>Estado:</strong> completada</p>
-                    <button class="demo-btn small-btn btn-historial">Ver resumen</button>
-                </div>
-                <div class="stat-card" style="text-align: left;">
-                    <h4 style="margin-top:0;">Semana 4 — Variables aleatorias discretas</h4>
-                    <p><strong>Estado:</strong> en curso</p>
-                    <button class="demo-btn small-btn btn-historial">Continuar</button>
-                </div>
-            </div>
-            <div id="msg-historial" class="hidden mt-10" style="padding: 10px; background-color: #eef2f5; border-left: 4px solid var(--accent-color); border-radius: 4px;">
-                En una versión completa, JUNTOS permitiría repasar esta semana con una explicación breve, ejercicios tipo y diagnóstico de temas pendientes.
+                ${weeksCardsHTML}
             </div>
         </div>
     `;
 
-    document.getElementById('btn-comenzar-teoria').addEventListener('click', () => {
+    document.getElementById('btn-ir-teoria').addEventListener('click', () => {
         clickSidebarMenu('material');
     });
 
-    document.querySelectorAll('.btn-historial').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.getElementById('msg-historial').classList.remove('hidden');
+    document.getElementById('btn-ir-guia').addEventListener('click', () => {
+        clickSidebarMenu('guia');
+    });
+
+    document.getElementById('btn-ir-diag').addEventListener('click', () => {
+        clickSidebarMenu('diagnostico');
+    });
+
+    document.querySelectorAll('.btn-select-week').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const weekId = e.target.getAttribute('data-week');
+            setSelectedWeekId(weekId);
+            renderInicio(mainContentArea, mainTitle, mainDesc);
         });
     });
 }
@@ -280,34 +352,62 @@ function addRecommendation(state, recommendation, topic) {
 }
 
 function renderTeoriaGuiada(mainContentArea, mainTitle, mainDesc) {
-    mainTitle.textContent = "Teoría guiada: Variables aleatorias discretas";
-    mainDesc.textContent = "Unidad 2 - Explicación paso a paso con JUNTOS";
+    const currentWeek = getSelectedWeek();
 
-    mainContentArea.innerHTML = `
-        <div class="interactive-theory-container">
-            <div class="theory-progress-container">
-                <span class="section-kicker">Progreso de la semana</span>
-                <div class="theory-progress" id="theory-progress-chips">
-                    <!-- Chips will be generated here -->
+    if (currentWeek.id === "semana-4") {
+        mainTitle.textContent = "Teoría guiada: Variables aleatorias discretas";
+        mainDesc.textContent = "Unidad 2 - Explicación paso a paso con JUNTOS";
+
+        mainContentArea.innerHTML = `
+            <div class="interactive-theory-container">
+                <div class="theory-progress-container">
+                    <span class="section-kicker">Progreso de la semana</span>
+                    <div class="theory-progress" id="theory-progress-chips">
+                        <!-- Chips will be generated here -->
+                    </div>
+                </div>
+
+                <div class="lesson-flow" id="lesson-flow-container">
+                    <!-- Conversation flow will be generated here -->
+                </div>
+
+                <div class="lesson-input-panel">
+                    <textarea id="lesson-textarea" class="lesson-textarea" rows="2" placeholder="Escribí tu respuesta o duda acá..."></textarea>
+                    <button id="btn-lesson-send" class="demo-btn primary">Enviar</button>
+                </div>
+
+                <div class="lesson-actions" id="lesson-actions-container">
+                    <!-- Contextual action buttons will go here -->
                 </div>
             </div>
+        `;
 
-            <div class="lesson-flow" id="lesson-flow-container">
-                <!-- Conversation flow will be generated here -->
+        renderTheoryState();
+    } else {
+        mainTitle.textContent = `Material de la materia — Semana ${currentWeek.number}`;
+        mainDesc.textContent = currentWeek.title;
+
+        mainContentArea.innerHTML = `
+            <div class="diagnostico-section">
+                <h3>${currentWeek.title}</h3>
+                <p>En una versión completa, JUNTOS mostraría la teoría guiada de esta semana, usando el material de la cátedra y el diagnóstico del estudiante.</p>
+
+                <div style="margin-top: 15px; background: white; padding: 15px; border-radius: 6px; border-left: 4px solid var(--accent-color);">
+                    <strong>Resumen de la semana:</strong><br>
+                    ${currentWeek.summary}
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button id="btn-volver-semana4-teoria" class="demo-btn primary">Volver a Semana 4 para ver demo funcional</button>
+                </div>
             </div>
+        `;
 
-            <div class="lesson-input-panel">
-                <textarea id="lesson-textarea" class="lesson-textarea" rows="2" placeholder="Escribí tu respuesta o duda acá..."></textarea>
-                <button id="btn-lesson-send" class="demo-btn primary">Enviar</button>
-            </div>
-
-            <div class="lesson-actions" id="lesson-actions-container">
-                <!-- Contextual action buttons will go here -->
-            </div>
-        </div>
-    `;
-
-    renderTheoryState();
+        document.getElementById('btn-volver-semana4-teoria').addEventListener('click', () => {
+            setSelectedWeekId("semana-4");
+            clickSidebarMenu('material');
+        });
+    }
 }
 
 function renderTheoryState() {
@@ -618,72 +718,103 @@ async function sendInteractiveTheoryMessage(userText) {
     }
 }
 function renderGuiaEjercicios(mainContentArea, mainTitle, mainDesc) {
-    mainTitle.textContent = "Guía de ejercicios";
-    mainDesc.textContent = "Ejercicios obligatorios del TP1 y práctica recomendada";
+    const currentWeek = getSelectedWeek();
 
-    const state = loadTheoryState();
+    if (currentWeek.id === "semana-4") {
+        mainTitle.textContent = "Guía de ejercicios";
+        mainDesc.textContent = "Ejercicios obligatorios del TP1 y práctica recomendada";
 
-    // Prototipo: Mostramos siempre la recomendación estática solicitada
-    let recommendedHtml = `
-        <div class="recommended-practice-card" style="background-color: #f9fbfc; border: 1px solid #d0d7de; padding: 20px; border-radius: 8px;">
-            <h3 class="exercise-section-title" style="margin-top: 0; color: #1a4f8b;">Práctica recomendada para Ana</h3>
-            <p>JUNTOS detectó que conviene reforzar:</p>
-            <ul style="margin-top: 5px; margin-bottom: 15px; padding-left: 20px;">
-                <li>identificación de valores posibles;</li>
-                <li>diferencia entre variable aleatoria y valores posibles.</li>
-            </ul>
-            <p style="margin-bottom: 15px;">Antes de avanzar con el TP1, se recomienda resolver un ejercicio tipo.</p>
+        const state = loadTheoryState();
 
-            <div style="background-color: white; border-left: 4px solid #1a4f8b; padding: 10px 15px; margin-bottom: 15px;">
-                <strong>Ejercicio recomendado:</strong><br>
-                Se lanza una moneda dos veces. Sea X = cantidad de caras obtenidas.<br>
-                Indicá qué valores puede tomar X y por qué es discreta.
+        // Prototipo: Mostramos siempre la recomendación estática solicitada
+        let recommendedHtml = `
+            <div class="recommended-practice-card" style="background-color: #f9fbfc; border: 1px solid #d0d7de; padding: 20px; border-radius: 8px;">
+                <h3 class="exercise-section-title" style="margin-top: 0; color: #1a4f8b;">Práctica recomendada para Ana</h3>
+                <p>JUNTOS detectó que conviene reforzar:</p>
+                <ul style="margin-top: 5px; margin-bottom: 15px; padding-left: 20px;">
+                    <li>identificación de valores posibles;</li>
+                    <li>diferencia entre variable aleatoria y valores posibles.</li>
+                </ul>
+                <p style="margin-bottom: 15px;">Antes de avanzar con el TP1, se recomienda resolver un ejercicio tipo.</p>
+
+                <div style="background-color: white; border-left: 4px solid #1a4f8b; padding: 10px 15px; margin-bottom: 15px;">
+                    <strong>Ejercicio recomendado:</strong><br>
+                    Se lanza una moneda dos veces. Sea X = cantidad de caras obtenidas.<br>
+                    Indicá qué valores puede tomar X y por qué es discreta.
+                </div>
+
+                <button id="btn-resolve-recommended" class="demo-btn primary">Resolver ejercicio recomendado</button>
             </div>
+        `;
 
-            <button id="btn-resolve-recommended" class="demo-btn primary">Resolver ejercicio recomendado</button>
-        </div>
-    `;
+        let requiredHtml = REQUIRED_EXERCISES.map((ex, index) => {
+            let statusTag = '';
+            if (ex.status === 'Pendiente') statusTag = '<span class="tag tag-pend">Pendiente</span>';
+            else if (ex.status === 'Resuelto') statusTag = '<span class="tag tag-res">Resuelto</span>';
+            else statusTag = `<span class="tag">${ex.status}</span>`;
 
-    let requiredHtml = REQUIRED_EXERCISES.map((ex, index) => {
-        let statusTag = '';
-        if (ex.status === 'Pendiente') statusTag = '<span class="tag tag-pend">Pendiente</span>';
-        else if (ex.status === 'Resuelto') statusTag = '<span class="tag tag-res">Resuelto</span>';
-        else statusTag = `<span class="tag">${ex.status}</span>`;
-
-        return `
-            <div class="exercise-card">
-                <div class="exercise-card-header">
-                    <strong>${ex.title}</strong>
-                    ${statusTag}
+            return `
+                <div class="exercise-card">
+                    <div class="exercise-card-header">
+                        <strong>${ex.title}</strong>
+                        ${statusTag}
+                    </div>
+                    <div class="exercise-meta">
+                        Tema: ${ex.topic} | Dificultad: ${ex.difficulty}
+                    </div>
+                    <div class="exercise-actions mt-10">
+                        <button class="demo-btn small-btn btn-resolve-required" data-index="${index}">Resolver ejercicio</button>
+                    </div>
                 </div>
-                <div class="exercise-meta">
-                    Tema: ${ex.topic} | Dificultad: ${ex.difficulty}
+            `;
+        }).join('');
+
+        mainContentArea.innerHTML = `
+            ${recommendedHtml}
+            <h3 class="exercise-section-title mt-20">Ejercicios obligatorios del TP1</h3>
+            <div class="ejercicio-list">
+                ${requiredHtml}
+            </div>
+        `;
+
+        document.getElementById('btn-resolve-recommended').addEventListener('click', () => {
+            openExerciseResolver(mainContentArea, mainTitle, mainDesc, RECOMMENDED_EXERCISE);
+        });
+
+        document.querySelectorAll('.btn-resolve-required').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = e.target.getAttribute('data-index');
+                openExerciseResolver(mainContentArea, mainTitle, mainDesc, REQUIRED_EXERCISES[index]);
+            });
+        });
+    } else {
+        mainTitle.textContent = `Guía de ejercicios — Semana ${currentWeek.number}`;
+        mainDesc.textContent = currentWeek.title;
+
+        let recommendationContent = "Esta sección mostraría los ejercicios de la semana seleccionada y recomendaciones personalizadas según el diagnóstico.";
+        if (currentWeek.id === "semana-3") {
+            recommendationContent += "<br><br><strong>Ejemplo de recomendación:</strong><br>Repasar la diferencia entre resultado del experimento y variable aleatoria.";
+        }
+
+        mainContentArea.innerHTML = `
+            <div class="diagnostico-section">
+                <h3>${currentWeek.title}</h3>
+
+                <div style="margin-top: 15px; background: white; padding: 15px; border-radius: 6px; border-left: 4px solid var(--accent-color);">
+                    <p>${recommendationContent}</p>
                 </div>
-                <div class="exercise-actions mt-10">
-                    <button class="demo-btn small-btn btn-resolve-required" data-index="${index}">Resolver ejercicio</button>
+
+                <div style="margin-top: 30px;">
+                    <button id="btn-volver-semana4-guia" class="demo-btn primary">Volver a Semana 4 para ver demo funcional</button>
                 </div>
             </div>
         `;
-    }).join('');
 
-    mainContentArea.innerHTML = `
-        ${recommendedHtml}
-        <h3 class="exercise-section-title mt-20">Ejercicios obligatorios del TP1</h3>
-        <div class="ejercicio-list">
-            ${requiredHtml}
-        </div>
-    `;
-
-    document.getElementById('btn-resolve-recommended').addEventListener('click', () => {
-        openExerciseResolver(mainContentArea, mainTitle, mainDesc, RECOMMENDED_EXERCISE);
-    });
-
-    document.querySelectorAll('.btn-resolve-required').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const index = e.target.getAttribute('data-index');
-            openExerciseResolver(mainContentArea, mainTitle, mainDesc, REQUIRED_EXERCISES[index]);
+        document.getElementById('btn-volver-semana4-guia').addEventListener('click', () => {
+            setSelectedWeekId("semana-4");
+            clickSidebarMenu('guia');
         });
-    });
+    }
 }
 
 function openExerciseResolver(mainContentArea, mainTitle, mainDesc, exercise) {
@@ -747,94 +878,106 @@ function renderResolverEjercicio(mainContentArea, mainTitle, mainDesc, exercise 
 }
 
 function renderDiagnostico(mainContentArea, mainTitle, mainDesc) {
-    mainTitle.textContent = "Mi diagnóstico";
-    mainDesc.textContent = "Resumen de Ana Torres";
+    const currentWeek = getSelectedWeek();
+    mainTitle.textContent = `Mi diagnóstico — Semana ${currentWeek.number}`;
+    mainDesc.textContent = currentWeek.title;
 
-    const state = loadTheoryState();
+    if (currentWeek.id === "semana-4") {
+        const state = loadTheoryState();
 
-    let stateGeneral = "Pendiente";
-    if (state.completedTopics.length > 0 || state.understoodTopics.length > 0) {
-        stateGeneral = state.weakTopics.length > 0 ? "En proceso" : "Avanzado";
-    }
+        let stateGeneral = "En proceso";
+        if (state.completedTopics.length > 0 || state.understoodTopics.length > 0) {
+            stateGeneral = state.weakTopics.length > 0 ? "En proceso" : "Avanzado";
+        }
 
-    let understoodHtml = state.understoodTopics.length > 0
-        ? state.understoodTopics.map(t => `<li>${t}</li>`).join("")
-        : "<li>Todavía no hay temas marcados como entendidos.</li>";
+        let difficultyHtml = "";
+        let recommendationHtml = "Resolver un ejercicio tipo sobre valores posibles antes de avanzar al TP1.";
+        let evidenceHtml = "Respondió 1 y 2 cuando también era posible 0.";
 
-    let weakHtml = state.weakTopics.length > 0
-        ? state.weakTopics.map(t => `<li>${t}</li>`).join("")
-        : "<li>Todavía no hay temas marcados como flojos.</li>";
+        if (state.detectedDifficulties && state.detectedDifficulties.length > 0) {
+            const latestDiff = state.detectedDifficulties[state.detectedDifficulties.length - 1];
+            difficultyHtml = latestDiff.difficulty;
+            evidenceHtml = latestDiff.evidence;
+            recommendationHtml = latestDiff.recommendation;
+        } else {
+            difficultyHtml = "No identifica todos los valores posibles";
+        }
 
-    let difficultiesHtml = "";
-    if (state.detectedDifficulties && state.detectedDifficulties.length > 0) {
-        difficultiesHtml = state.detectedDifficulties.map(d => `
-            <div class="difficulty-item">
-                <p><strong>Dificultad en ${d.topic}:</strong> ${d.difficulty}</p>
-                <p><em>Evidencia:</em> ${d.evidence}</p>
-                <p><em>Recomendación:</em> ${d.recommendation}</p>
+        mainContentArea.innerHTML = `
+            <div class="diagnostico-container" style="max-width: 800px;">
+                <div style="background-color: white; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+
+                    <div style="padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0;">Estado de la semana</h3>
+                        <span class="tag" style="background-color: #e3f2fd; color: #1565c0; font-weight: bold;">${stateGeneral}</span>
+                    </div>
+
+                    <div style="padding: 20px; border-bottom: 1px solid #eee; background-color: #fdf3f4;">
+                        <h4 style="margin-top: 0; color: #d32f2f;">Dificultad principal detectada</h4>
+                        <p style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">${difficultyHtml}</p>
+                        <p style="color: #666; margin-top: 0; font-size: 0.95rem;"><strong>Evidencia:</strong> ${evidenceHtml}</p>
+                    </div>
+
+                    <div style="padding: 20px; border-bottom: 1px solid #eee; background-color: #e8f5e9;">
+                        <h4 style="margin-top: 0; color: #2e7d32;">Recomendación de JUNTOS</h4>
+                        <p style="margin-bottom: 0;">${recommendationHtml}</p>
+                    </div>
+
+                    <div style="padding: 20px;">
+                        <h4 style="margin-top: 0;">Próximos pasos sugeridos:</h4>
+                        <ol style="margin-bottom: 0; padding-left: 20px;">
+                            <li style="margin-bottom: 8px;">Repasar el ejemplo de moneda dos veces.</li>
+                            <li style="margin-bottom: 8px;">Resolver el ejercicio recomendado en la Guía.</li>
+                            <li>Volver a intentar un ejercicio obligatorio.</li>
+                        </ol>
+                    </div>
+                </div>
             </div>
-        `).join("");
+        `;
     } else {
-        difficultiesHtml = "<p>Todavía no hay dificultades detectadas. A medida que interactúes con la teoría guiada, JUNTOS va a actualizar este diagnóstico.</p>";
+        let diffText = "";
+        let recText = "";
+
+        if (currentWeek.id === "semana-2") {
+            diffText = "Independencia vs probabilidad condicional";
+            recText = "Repasar cuándo P(A|B) cambia respecto de P(A).";
+        } else {
+            diffText = "No se registraron dificultades importantes.";
+            recText = "Avanzar con la siguiente unidad.";
+        }
+
+        mainContentArea.innerHTML = `
+            <div class="diagnostico-container" style="max-width: 800px;">
+                <div style="background-color: white; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+
+                    <div style="padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0;">Estado</h3>
+                        <span class="tag" style="background-color: #f5f5f5; color: #333; font-weight: bold; text-transform: capitalize;">${currentWeek.status}</span>
+                    </div>
+
+                    <div style="padding: 20px; border-bottom: 1px solid #eee;">
+                        <h4 style="margin-top: 0; color: #1a4f8b;">Dificultad registrada</h4>
+                        <p style="font-size: 1.05rem; margin-bottom: 0;">${diffText}</p>
+                    </div>
+
+                    <div style="padding: 20px; background-color: #f8f9fa;">
+                        <h4 style="margin-top: 0; color: #333;">Recomendación</h4>
+                        <p style="margin-bottom: 0;">${recText}</p>
+                    </div>
+
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button id="btn-volver-semana4-diag" class="demo-btn primary">Volver a Semana 4 para ver demo funcional</button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('btn-volver-semana4-diag').addEventListener('click', () => {
+            setSelectedWeekId("semana-4");
+            clickSidebarMenu('diagnostico');
+        });
     }
-
-    mainContentArea.innerHTML = `
-        <div class="diagnostico-container">
-            <div class="diagnostico-summary-grid">
-                <div class="diagnostico-card">
-                    <h4>Estado general</h4>
-                    <p class="diagnostico-status">${stateGeneral}</p>
-                </div>
-                <div class="diagnostico-card">
-                    <h4>Tema actual</h4>
-                    <p class="diagnostico-status" style="font-size: 1.2rem; text-transform: capitalize;">${state.currentTopic}</p>
-                </div>
-            </div>
-
-            <div class="diagnostico-section mt-20">
-                <h3>Temas entendidos</h3>
-                <ul class="strength-list">
-                    ${understoodHtml}
-                </ul>
-            </div>
-
-            <div class="diagnostico-section mt-20">
-                <h3>Temas flojos</h3>
-                <ul class="strength-list">
-                    ${weakHtml}
-                </ul>
-            </div>
-
-            <div class="diagnostico-section mt-20">
-                <h3>Dificultades detectadas</h3>
-                <div class="difficulty-list">
-                    ${difficultiesHtml}
-                </div>
-            </div>
-
-            <div class="diagnostico-section mt-20">
-                <h3>Historial de cursada resumido</h3>
-                <div class="cards-grid" style="grid-template-columns: 1fr;">
-                    <div class="stat-card" style="text-align: left;">
-                        <h4 style="margin-top:0;">Semana 1 — Probabilidad básica</h4>
-                        <p><strong>Estado:</strong> completada</p>
-                    </div>
-                    <div class="stat-card" style="text-align: left;">
-                        <h4 style="margin-top:0;">Semana 2 — Probabilidad condicional</h4>
-                        <p><strong>Estado:</strong> refuerzo recomendado</p>
-                    </div>
-                    <div class="stat-card" style="text-align: left;">
-                        <h4 style="margin-top:0;">Semana 3 — Variables aleatorias</h4>
-                        <p><strong>Estado:</strong> completada</p>
-                    </div>
-                    <div class="stat-card" style="text-align: left;">
-                        <h4 style="margin-top:0;">Semana 4 — Variables aleatorias discretas</h4>
-                        <p><strong>Estado:</strong> en curso</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
 }
 
 function renderPractica(mainContentArea, mainTitle, mainDesc) {
@@ -886,14 +1029,28 @@ function renderPractica(mainContentArea, mainTitle, mainDesc) {
 }
 
 function renderGrupos(mainContentArea, mainTitle, mainDesc) {
-    mainTitle.textContent = "Grupos de estudio";
+    const currentWeek = getSelectedWeek();
+    mainTitle.textContent = `Grupos de estudio — Semana ${currentWeek.number}`;
     mainDesc.textContent = "Grupos sugeridos según tu desempeño";
+
+    let tema = currentWeek.topicLabel || currentWeek.title;
+    let motivo = "varios estudiantes presentan dificultad similar.";
+    let actividad = "Resolver ejercicios de la guía juntos.";
+
+    if (currentWeek.id === "semana-4") {
+        tema = "Variable aleatoria discreta";
+        motivo = "varios estudiantes presentan dificultad para identificar valores posibles.";
+        actividad = "Resolver ejercicios tipo sobre variables de conteo.";
+    } else if (currentWeek.id === "semana-2") {
+        motivo = "varios estudiantes presentan dudas sobre independencia y probabilidad condicional.";
+        actividad = "Revisar ejemplos de extracción con y sin reposición.";
+    }
 
     mainContentArea.innerHTML = `
         <div class="grupo-card">
             <h3>Grupo sugerido por JUNTOS</h3>
-            <p><strong>Tema:</strong> Variable aleatoria discreta</p>
-            <p><strong>Motivo:</strong> varios estudiantes presentan dificultad para identificar valores posibles.</p>
+            <p><strong>Tema:</strong> ${tema}</p>
+            <p><strong>Motivo:</strong> ${motivo}</p>
             <p><strong>Integrantes sugeridos:</strong></p>
             <ul>
                 <li>Ana Torres</li>
@@ -902,17 +1059,73 @@ function renderGrupos(mainContentArea, mainTitle, mainDesc) {
                 <li>Martín Gómez</li>
             </ul>
             <p><strong>Actividad sugerida:</strong></p>
-            <p>Resolver ejercicios tipo sobre variables de conteo.</p>
+            <p>${actividad}</p>
             <button id="btn-unirse-grupo" class="demo-btn primary mt-10">Unirme al grupo</button>
             <div id="msg-unirse-grupo" class="success-msg hidden mt-10" style="padding: 10px; background-color: #eef2f5; border-left: 4px solid var(--accent-color); border-radius: 4px;">
                 Te sumamos al grupo sugerido. En una versión completa, JUNTOS coordinaría la actividad y sugeriría ejercicios compartidos.
             </div>
+
+            ${currentWeek.id !== 'semana-4' ? `
+            <div style="margin-top: 30px;">
+                <button id="btn-volver-semana4-grupos" class="demo-btn">Volver a Semana 4</button>
+            </div>
+            ` : ''}
         </div>
     `;
 
     document.getElementById('btn-unirse-grupo').addEventListener('click', function() {
         document.getElementById('msg-unirse-grupo').classList.remove('hidden');
     });
+
+    const btnVolver = document.getElementById('btn-volver-semana4-grupos');
+    if (btnVolver) {
+        btnVolver.addEventListener('click', () => {
+            setSelectedWeekId("semana-4");
+            clickSidebarMenu('grupos');
+        });
+    }
+}
+
+function renderConsultas(mainContentArea, mainTitle, mainDesc) {
+    const currentWeek = getSelectedWeek();
+    mainTitle.textContent = `Consultas — Semana ${currentWeek.number}`;
+    mainDesc.textContent = currentWeek.title;
+
+    if (currentWeek.id === "semana-4") {
+        mainContentArea.innerHTML = `
+            <div class="diagnostico-section">
+                <h3>${currentWeek.title}</h3>
+                <p>Podés hacer consultas sobre la teoría, ejercicios o dudas de esta semana.</p>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button id="btn-consulta-teoria" class="demo-btn primary">Ir a teoría guiada</button>
+                    <button id="btn-consulta-guia" class="demo-btn">Ver guía de ejercicios</button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('btn-consulta-teoria').addEventListener('click', () => {
+            clickSidebarMenu('material');
+        });
+
+        document.getElementById('btn-consulta-guia').addEventListener('click', () => {
+            clickSidebarMenu('guia');
+        });
+    } else {
+        mainContentArea.innerHTML = `
+            <div class="diagnostico-section">
+                <h3>${currentWeek.title}</h3>
+                <p>En una versión completa, JUNTOS permitiría consultar sobre esta semana usando el material de la cátedra.</p>
+                <div style="margin-top: 30px;">
+                    <button id="btn-volver-semana4-consultas" class="demo-btn primary">Volver a Semana 4 para ver demo funcional</button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('btn-volver-semana4-consultas').addEventListener('click', () => {
+            setSelectedWeekId("semana-4");
+            clickSidebarMenu('consultas');
+        });
+    }
 }
 
 
