@@ -457,28 +457,55 @@ body.app-layout {
     border: 1px solid #e0e0e0;
 }
 
-/* Guia Ejercicios */
+/* Guia Ejercicios y Practica Recomendada */
+.recommended-practice-card {
+    background-color: #e6f7ff;
+    border-left: 4px solid var(--accent-color);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.exercise-section-title {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
 .ejercicio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.exercise-card {
     background-color: var(--white);
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid #e0e0e0;
 }
-.ej-item {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
+
+.exercise-card-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.exercise-meta {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+}
+
+.exercise-actions {
+    display: flex;
     gap: 10px;
 }
-.ej-item:last-child {
-    border-bottom: none;
-}
-.highlight-ej {
-    background-color: rgba(0, 136, 145, 0.05);
-    border-left: 3px solid var(--accent-color);
-}
+
 .tag {
     padding: 4px 8px;
     border-radius: 12px;
@@ -496,6 +523,25 @@ body.app-layout {
     padding: 25px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.resolver-header {
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+
+.resolver-card {
+    border: 1px solid #e0e0e0;
+}
+
+.back-to-guide-btn {
+    margin-left: auto;
+}
+
+.feedback-ai-card {
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
 }
 
 /* Diagnosis Inline Card */

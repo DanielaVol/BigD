@@ -3,12 +3,52 @@ let error_estandar_dificultad = false;
 
 const TUTOR_API_URL = "http://localhost:8001/api/tutor";
 
+const REQUIRED_EXERCISES = [
+    {
+      id: "tp1-2-2",
+      title: "Ejercicio 2.2",
+      topic: "Función de distribución discreta",
+      difficulty: "Baja",
+      status: "Pendiente",
+      statement: "Sea X una variable aleatoria con función de probabilidad P(X=x) = kx para x = 1, 2, 3, 4. Calcular el valor de k y la función de distribución.",
+      hint: "Primero identificá qué valores puede tomar la variable. Acordate que la suma de las probabilidades debe ser 1."
+    },
+    {
+      id: "tp1-2-3",
+      title: "Ejercicio 2.3",
+      topic: "Función de probabilidad / extracciones",
+      difficulty: "Media",
+      status: "Pendiente",
+      statement: "De una urna con 5 bolas rojas y 3 azules se extraen 2 bolas. Sea X = cantidad de bolas rojas extraídas. Hallar la función de probabilidad de X.",
+      hint: "Pensá si las extracciones son con o sin reposición. ¿Qué valores puede tomar X?"
+    },
+    {
+      id: "tp1-2-4",
+      title: "Ejercicio 2.4",
+      topic: "Geométrica / Pascal",
+      difficulty: "Media",
+      status: "Pendiente",
+      statement: "Un tirador tiene probabilidad 0.8 de dar en el blanco. ¿Cuál es la probabilidad de que necesite exactamente 3 tiros para acertar 2 veces?",
+      hint: "Esta es una distribución de Pascal (o binomial negativa). ¿Cuáles son los parámetros?"
+    }
+];
+
+const RECOMMENDED_EXERCISE = {
+    id: "rec-valores-posibles",
+    title: "Ejercicio recomendado",
+    topic: "Variable aleatoria discreta",
+    difficulty: "Baja",
+    status: "Recomendado",
+    statement: "Se lanza una moneda dos veces. Sea X = cantidad de caras obtenidas.\n1. ¿Qué valores puede tomar X?\n2. ¿Por qué X es discreta?",
+    hint: "Listá todos los resultados posibles: CC, CS, SC y SS. Después contá cuántas caras hay en cada caso."
+};
+
 // Expose a global rendering function to hook into app-layout.js
 window.renderDemoSection = function(target, sectionName, mainContentArea, mainTitle, mainDesc) {
     if (!mainContentArea || !mainTitle || !mainDesc) return false;
 
     // We only override specific sections, others can fallback to default placeholder
-    if (['inicio', 'material', 'guia', 'resolver', 'diagnostico', 'practica', 'grupos'].includes(target)) {
+    if (['inicio', 'material', 'guia', 'diagnostico', 'grupos', 'consultas'].includes(target)) {
         renderSectionContent(target, sectionName, mainContentArea, mainTitle, mainDesc);
         return true;
     }
@@ -30,14 +70,8 @@ function renderSectionContent(target, sectionName, mainContentArea, mainTitle, m
         case 'guia':
             renderGuiaEjercicios(mainContentArea, mainTitle, mainDesc);
             break;
-        case 'resolver':
-            renderResolverEjercicio(mainContentArea, mainTitle, mainDesc);
-            break;
         case 'diagnostico':
             renderDiagnostico(mainContentArea, mainTitle, mainDesc);
-            break;
-        case 'practica':
-            renderPractica(mainContentArea, mainTitle, mainDesc);
             break;
         case 'grupos':
             renderGrupos(mainContentArea, mainTitle, mainDesc);
@@ -551,52 +585,113 @@ async function sendInteractiveTheoryMessage(userText) {
 }
 function renderGuiaEjercicios(mainContentArea, mainTitle, mainDesc) {
     mainTitle.textContent = "Guía de ejercicios";
-    mainDesc.textContent = "Tema: Intervalos de confianza";
+    mainDesc.textContent = "Ejercicios obligatorios del TP1 y práctica recomendada";
 
-    const ej4Status = error_estandar_dificultad ? '<span class="tag tag-recom">Recomendado</span>' : '<span class="tag tag-pend">Pendiente</span>';
-    const ej5Status = '<span class="tag tag-pend">Pendiente</span>';
+    const state = loadTheoryState();
+    const hasRecommendations = (state.detectedDifficulties && state.detectedDifficulties.length > 0) ||
+                               (state.recommendations && state.recommendations.length > 0);
+
+    let recommendedHtml = '';
+    if (hasRecommendations) {
+        let diffsText = state.detectedDifficulties.map(d => d.difficulty).join(", ");
+        recommendedHtml = `
+            <div class="recommended-practice-card">
+                <h3 class="exercise-section-title">Práctica recomendada para Ana</h3>
+                <p>JUNTOS detectó que conviene reforzar: <strong>${diffsText || 'conceptos en proceso'}</strong></p>
+                <button id="btn-resolve-recommended" class="demo-btn primary mt-10">Resolver ejercicio recomendado</button>
+            </div>
+        `;
+    } else {
+        recommendedHtml = `
+            <div class="recommended-practice-card">
+                <h3 class="exercise-section-title">Práctica recomendada para Ana</h3>
+                <p>Todavía no hay recomendaciones específicas. Avanzá con la teoría guiada para que JUNTOS pueda personalizar tu práctica.</p>
+            </div>
+        `;
+    }
+
+    let requiredHtml = REQUIRED_EXERCISES.map((ex, index) => {
+        let statusTag = '';
+        if (ex.status === 'Pendiente') statusTag = '<span class="tag tag-pend">Pendiente</span>';
+        else if (ex.status === 'Resuelto') statusTag = '<span class="tag tag-res">Resuelto</span>';
+        else statusTag = `<span class="tag">${ex.status}</span>`;
+
+        return `
+            <div class="exercise-card">
+                <div class="exercise-card-header">
+                    <strong>${ex.title}</strong>
+                    ${statusTag}
+                </div>
+                <div class="exercise-meta">
+                    Tema: ${ex.topic} | Dificultad: ${ex.difficulty}
+                </div>
+                <div class="exercise-actions mt-10">
+                    <button class="demo-btn small-btn btn-resolve-required" data-index="${index}">Resolver ejercicio</button>
+                </div>
+            </div>
+        `;
+    }).join('');
 
     mainContentArea.innerHTML = `
+        ${recommendedHtml}
+        <h3 class="exercise-section-title mt-20">Ejercicios obligatorios del TP1</h3>
         <div class="ejercicio-list">
-            <div class="ej-item"><strong>Ejercicio 1:</strong> Tema: Interpretación de intervalos | Dificultad: Baja | <span class="tag tag-res">Resuelto</span></div>
-            <div class="ej-item"><strong>Ejercicio 2:</strong> Tema: Media con sigma conocido | Dificultad: Baja | <span class="tag tag-res">Resuelto</span></div>
-            <div class="ej-item"><strong>Ejercicio 3:</strong> Tema: Media con desvío muestral | Dificultad: Media | <span class="tag tag-res">Resuelto</span></div>
-            <div class="ej-item highlight-ej"><strong>Ejercicio 4:</strong> Tema: Error estándar | Dificultad: Media | ${ej4Status}</div>
-            <div class="ej-item highlight-ej">
-                <strong>Ejercicio 5:</strong> Tema: Intervalo para media | Dificultad: Media | ${ej5Status}
-                <br><button id="btn-resolver-5" class="demo-btn small-btn mt-10">Resolver ejercicio</button>
-            </div>
-            <div class="ej-item"><strong>Ejercicio 6:</strong> Tema: Intervalo para proporción | Dificultad: Media | <span class="tag tag-pend">Pendiente</span></div>
-            <div class="ej-item"><strong>Ejercicio 7:</strong> Tema: Comparación de intervalos | Dificultad: Alta | <span class="tag tag-block">Bloqueado hasta reforzar error estándar</span></div>
-            <div class="ej-item"><strong>Ejercicio 8:</strong> Tema: Tamaño muestral | Dificultad: Alta | <span class="tag tag-pend">Pendiente</span></div>
+            ${requiredHtml}
         </div>
     `;
 
-    document.getElementById('btn-resolver-5').addEventListener('click', () => {
-        clickSidebarMenu('resolver');
+    if (hasRecommendations) {
+        document.getElementById('btn-resolve-recommended').addEventListener('click', () => {
+            openExerciseResolver(mainContentArea, mainTitle, mainDesc, RECOMMENDED_EXERCISE);
+        });
+    }
+
+    document.querySelectorAll('.btn-resolve-required').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = e.target.getAttribute('data-index');
+            openExerciseResolver(mainContentArea, mainTitle, mainDesc, REQUIRED_EXERCISES[index]);
+        });
     });
 }
 
-function renderResolverEjercicio(mainContentArea, mainTitle, mainDesc) {
+function openExerciseResolver(mainContentArea, mainTitle, mainDesc, exercise) {
+    renderResolverEjercicio(mainContentArea, mainTitle, mainDesc, exercise);
+}
+
+function renderResolverEjercicio(mainContentArea, mainTitle, mainDesc, exercise = null) {
     mainTitle.textContent = "Resolver ejercicio";
-    mainDesc.textContent = "Ejercicio 5";
+
+    if (!exercise) {
+        // Fallback or default exercise if none provided
+        exercise = REQUIRED_EXERCISES[0];
+    }
+
+    mainDesc.textContent = `${exercise.title} - Tema: ${exercise.topic}`;
 
     mainContentArea.innerHTML = `
-        <div class="resolver-container">
+        <div class="resolver-container resolver-card">
+            <div class="resolver-header">
+                <h3>${exercise.title}</h3>
+            </div>
             <div class="enunciado-box">
-                <p>Una muestra de 36 estudiantes tiene media 72 y desvío estándar 12. Construir un intervalo de confianza del 95% para la media poblacional.</p>
+                <p>${exercise.statement.replace(/\n/g, '<br>')}</p>
             </div>
             <textarea id="resolucion-text" class="resolucion-textarea" rows="6" placeholder="Escribí tu resolución acá..."></textarea>
             <div class="resolver-actions mt-10">
                 <button id="btn-pista" class="demo-btn secondary">Pedir pista</button>
                 <button id="btn-enviar" class="demo-btn primary">Enviar resolución</button>
+                <button id="btn-volver-guia" class="demo-btn secondary back-to-guide-btn">Volver a guía</button>
             </div>
             <div id="pista-msg" class="pista-msg hidden mt-10">
-                Antes de calcular el margen de error, revisá si tenés que usar el desvío estándar directamente o el error estándar de la media.
+                ${exercise.hint}
             </div>
-            <div id="feedback-resolucion" class="mt-20"></div>
+            <div id="feedback-resolucion" class="mt-20 feedback-ai-card"></div>
         </div>
     `;
+
+    document.getElementById('btn-volver-guia').addEventListener('click', () => {
+        renderGuiaEjercicios(mainContentArea, mainTitle, mainDesc);
+    });
 
     document.getElementById('btn-pista').addEventListener('click', () => {
         document.getElementById('pista-msg').classList.remove('hidden');
@@ -606,52 +701,16 @@ function renderResolverEjercicio(mainContentArea, mainTitle, mainDesc) {
         const text = document.getElementById('resolucion-text').value.toLowerCase();
         const feedbackContainer = document.getElementById('feedback-resolucion');
 
-        // Condiciones de error
-        const hasError = /1\.96 \* 12|1\.96 x 12|1\.96 × 12|72 ± 23\.52|desvío estándar(?!.*error estándar)/.test(text);
-
-        // Condiciones de acierto
-        const hasSuccess = /error estándar|12 \/ √36|12 \/ sqrt\(36\)|margen 3\.92|\[68\.08 ; 75\.92\]/.test(text);
-
-        if (hasError && !hasSuccess) {
-            error_estandar_dificultad = true;
-            feedbackContainer.innerHTML = `
-                <div class="feedback-card error-card">
-                    <h4>Feedback personalizado de JUNTOS</h4>
-                    <p><strong>Estado:</strong> Resolución en revisión</p>
-                    <p><strong>Lo que hiciste bien:</strong> Identificaste correctamente que se trata de un intervalo de confianza para una media y usaste el valor crítico 1.96 para un nivel de confianza del 95%.</p>
-                    <p><strong>Punto a revisar:</strong> En este ejercicio no corresponde multiplicar 1.96 por el desvío estándar directamente. Primero tenés que calcular el error estándar de la media.</p>
-                    <p><strong>Explicación:</strong> El desvío estándar mide variabilidad de los datos. El error estándar mide variabilidad de la media muestral. Para una media, se calcula como s / √n.<br>
-                    En este caso:<br>
-                    s = 12<br>
-                    n = 36<br>
-                    √n = 6<br>
-                    error estándar = 12 / 6 = 2</p>
-                    <p><strong>Próximo paso:</strong> Recalculá el margen de error usando 2 en lugar de 12.</p>
-                    <p><em>Actualizar diagnóstico: Tema flojo detectado: error estándar.</em></p>
-                    <p><strong>Recomendación:</strong> Antes de avanzar a intervalos para proporciones, resolvé el ejercicio 4 y reintentá el ejercicio 5.</p>
-                    <div class="grupo-estudio-sug">
-                        <h5>Este tema te está costando. Hay un grupo de estudio esta semana para practicar error estándar e intervalos para medias.</h5>
-                        <p>Grupo: Intervalos para medias<br>Horario: jueves 18:00<br>Participantes sugeridos: Ana Torres, Diego Pérez, Camila Ruiz, Martín Gómez</p>
-                        <button id="btn-unirse-resolver" class="demo-btn primary">Quiero unirme</button>
-                        <div id="msg-unirse-resolver" class="success-msg hidden">Te sumamos al grupo de estudio de Intervalos para medias. Vas a practicar ejercicios similares con compañeros que están trabajando el mismo tema.</div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('btn-unirse-resolver').addEventListener('click', function() {
-                document.getElementById('msg-unirse-resolver').classList.remove('hidden');
-                this.style.display = 'none';
-            });
-        } else if (hasSuccess) {
-            feedbackContainer.innerHTML = `
-                <div class="feedback-card success-card">
-                    <h4>Estado: Resolución correcta</h4>
-                    <p><strong>Mensaje:</strong> La resolución identifica correctamente el error estándar, calcula el margen de error y construye el intervalo de confianza. Ahora podés avanzar a intervalos para proporciones.</p>
-                    <p><em>Actualizar diagnóstico: Error estándar: en mejora | Construcción del intervalo: bien</em></p>
-                </div>
-            `;
-        } else {
-            feedbackContainer.innerHTML = '<p>Intenta ser más específico en tu resolución. Mostrá tus cálculos para el error estándar y margen de error.</p>';
-        }
+        // Simulated AI Feedback
+        feedbackContainer.innerHTML = `
+            <div class="feedback-card" style="background-color: #eef2f5; border-left: 4px solid var(--accent-color);">
+                <h4>Feedback de JUNTOS</h4>
+                <p><strong>Lo que hiciste bien:</strong> Planteaste bien la idea general de los valores.</p>
+                <p><strong>Punto a revisar:</strong> Fijate si no te falta algún valor posible (por ejemplo, el 0).</p>
+                <p><strong>Dificultad detectada:</strong> No identifica todos los valores posibles.</p>
+                <p><strong>Próximo paso recomendado:</strong> Revisá tu respuesta y agregá el valor faltante antes de continuar.</p>
+            </div>
+        `;
     });
 }
 
