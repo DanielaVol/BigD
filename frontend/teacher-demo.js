@@ -1,5 +1,88 @@
+
+const TEACHER_WEEKS = [
+  {
+    id: "semana-1",
+    number: 1,
+    title: "Probabilidad básica",
+    status: "Completada"
+  },
+  {
+    id: "semana-2",
+    number: 2,
+    title: "Probabilidad condicional",
+    status: "Refuerzo recomendado"
+  },
+  {
+    id: "semana-3",
+    number: 3,
+    title: "Variables aleatorias",
+    status: "Completada"
+  },
+  {
+    id: "semana-4",
+    number: 4,
+    title: "Variables aleatorias discretas",
+    status: "En curso"
+  }
+];
+
+function getTeacherSelectedWeekId() {
+    return localStorage.getItem("juntos_teacher_selected_week") || "semana-4";
+}
+
+function setTeacherSelectedWeekId(weekId) {
+    localStorage.setItem("juntos_teacher_selected_week", weekId);
+}
+
+function getTeacherSelectedWeek() {
+    const selectedId = getTeacherSelectedWeekId();
+    return TEACHER_WEEKS.find(w => w.id === selectedId) || TEACHER_WEEKS[3];
+}
+
+function updateTeacherWeekBadge() {
+    const week = getTeacherSelectedWeek();
+    const badge = document.getElementById("teacher-week-badge");
+    if (!badge) return;
+
+    badge.innerHTML = `
+        <div class="week-badge-label">Semana activa</div>
+        <select id="teacher-week-selector" class="week-selector">
+            ${TEACHER_WEEKS.map(w => `
+                <option value="${w.id}" ${w.id === week.id ? "selected" : ""}>
+                    Semana ${w.number} — ${w.title}
+                </option>
+            `).join("")}
+        </select>
+        <div class="week-badge-topic">${week.status}</div>
+    `;
+
+    const selector = document.getElementById("teacher-week-selector");
+
+    if (selector) {
+        selector.addEventListener("change", (e) => {
+            setTeacherSelectedWeekId(e.target.value);
+            updateTeacherWeekBadge();
+
+            const activeItem = document.querySelector(".sidebar-menu li.active");
+            if (activeItem) activeItem.click();
+        });
+    }
+}
+
 window.renderTeacherSection = function(target, sectionName, mainContentArea, mainTitle, mainDesc) {
+    updateTeacherWeekBadge();
     if (!mainContentArea || !mainTitle || !mainDesc) return false;
+
+    const week = getTeacherSelectedWeek();
+    let weekContextHtml = '';
+    if (week.id !== 'semana-4' && (target === 'dashboard' || target === 'consultas' || target === 'grupos')) {
+        weekContextHtml = `
+            <div class="teacher-week-context">
+                <div style="font-weight: 500;">Semana activa: Semana ${week.number} — ${week.title} (Estado: ${week.status})</div>
+                <div style="font-size: 0.9rem; margin-top: 5px;">En este prototipo, la demo completa está cargada para Semana 4. La selección de semana muestra cómo el sistema permitiría revisar otras semanas.</div>
+            </div>
+        `;
+    }
 
     if (target === 'dashboard') {
         mainTitle.textContent = "Dashboard docente";
@@ -7,6 +90,7 @@ window.renderTeacherSection = function(target, sectionName, mainContentArea, mai
 
         mainContentArea.innerHTML = `
             <div class="teacher-dashboard">
+                ${weekContextHtml}
                 <section class="teacher-section">
                     <h2>1. Resumen ejecutivo</h2>
                     <div class="cards-grid teacher-summary-grid">
@@ -136,10 +220,15 @@ window.renderTeacherSection = function(target, sectionName, mainContentArea, mai
                     <h2>6. Grupos sugeridos</h2>
                     <div class="stat-card teacher-card group-teacher-card">
                         <h3>Grupo 1 &mdash; Valores posibles de variables discretas</h3>
-                        <p><strong>Estudiantes con dificultad:</strong> Ana Torres, Martín López, Sofía Díaz</p>
-                        <p><strong>Estudiantes de apoyo:</strong> Camila Ruiz, Diego Pérez</p>
-                        <p><strong>Actividad sugerida:</strong> Resolver ejercicios de conteo y comparar valores posibles.</p>
-                        <button class="btn btn-primary btn-sm" onclick="alert('Grupo creado para la Semana 4. En una versión completa, JUNTOS enviaría la invitación a los estudiantes.')">Crear grupo</button>
+                        <ul>
+                            <li>Ana Torres &mdash; Refuerzo conceptual</li>
+                            <li>Martín López &mdash; Refuerzo práctico</li>
+                            <li>Sofía Díaz &mdash; Refuerzo de modelos</li>
+                            <li>Camila Ruiz &mdash; Apoyo par</li>
+                            <li>Diego Pérez &mdash; Recuperación guiada</li>
+                        </ul>
+                        <p style="margin-top: 15px;"><strong>Actividad sugerida:</strong> Resolver ejercicios de conteo y comparar valores posibles.</p>
+                        <button class="btn btn-primary btn-sm" style="margin-top: 10px;" onclick="alert('Grupo creado para la Semana 4. En una versión completa, JUNTOS enviaría la invitación a los estudiantes.')">Crear grupo</button>
                     </div>
                 </section>
 
@@ -451,54 +540,120 @@ window.renderTeacherSection = function(target, sectionName, mainContentArea, mai
     }
 
     if (target === 'grupos') {
-        mainTitle.textContent = "Grupos sugeridos por JUNTOS";
-        mainDesc.textContent = "JUNTOS agrupa estudiantes con dificultades similares junto a pares que pueden ayudarlos.";
+        mainTitle.textContent = "Grupos sugeridos";
+        mainDesc.textContent = "Agrupaciones sugeridas por JUNTOS basadas en dificultades complementarias.";
 
         mainContentArea.innerHTML = `
             <div class="teacher-dashboard">
+                ${weekContextHtml}
                 <section class="teacher-section">
-                    <div class="cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
+                    <div class="cards-grid" style="grid-template-columns: 1fr;">
 
-                        <div class="stat-card teacher-card group-teacher-card">
-                            <h3>Grupo A &mdash; Valores posibles de variables discretas</h3>
-                            <p><strong>Motivo:</strong> 6 estudiantes presentan errores similares.</p>
+                        <div class="stat-card teacher-card">
+                            <h3 style="color: var(--primary-color); border-bottom: 1px solid #eee; padding-bottom: 10px;">Grupo A &mdash; Valores posibles de variables discretas</h3>
+
+                            <div style="margin-top: 15px; overflow-x: auto;">
+                                <table class="group-role-table" style="width:100%; border-collapse:collapse; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom: 2px solid #ddd;">
+                                            <th style="padding:8px;">Estudiante</th>
+                                            <th style="padding:8px;">Rol</th>
+                                            <th style="padding:8px;">Motivo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="border-bottom: 1px solid #eee;">
+                                            <td style="padding:8px;">Ana Torres</td>
+                                            <td style="padding:8px;"><span class="role-badge role-refuerzo">Refuerzo conceptual</span></td>
+                                            <td style="padding:8px;">Omite valores posibles, especialmente el 0.</td>
+                                        </tr>
+                                        <tr style="border-bottom: 1px solid #eee;">
+                                            <td style="padding:8px;">Martín López</td>
+                                            <td style="padding:8px;"><span class="role-badge role-refuerzo">Refuerzo práctico</span></td>
+                                            <td style="padding:8px;">Dificultad al pasar de valores posibles a función de distribución.</td>
+                                        </tr>
+                                        <tr style="border-bottom: 1px solid #eee;">
+                                            <td style="padding:8px;">Sofía Díaz</td>
+                                            <td style="padding:8px;"><span class="role-badge role-refuerzo">Refuerzo de modelos</span></td>
+                                            <td style="padding:8px;">Confunde cuándo usar Binomial.</td>
+                                        </tr>
+                                        <tr style="border-bottom: 1px solid #eee;">
+                                            <td style="padding:8px;">Camila Ruiz</td>
+                                            <td style="padding:8px;"><span class="role-badge role-apoyo">Apoyo par</span></td>
+                                            <td style="padding:8px;">Resolución correcta en ejercicios 1 y 2.</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:8px;">Diego Pérez</td>
+                                            <td style="padding:8px;"><span class="role-badge role-recuperacion">Recuperación guiada</span></td>
+                                            <td style="padding:8px;">Baja actividad, conviene integrarlo al trabajo grupal.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
                             <div style="margin-top: 15px;">
-                                <p><strong>Estudiantes:</strong></p>
-                                <ul>
-                                    <li>Ana Torres</li>
-                                    <li>Martín López</li>
-                                    <li>Sofía Díaz</li>
+                                <p><strong>Actividad sugerida:</strong> Resolver ejercicios de conteo y comparar valores posibles.</p>
+                                <p style="margin-top: 5px;"><strong>Producto del grupo:</strong> Cada estudiante debe explicar un paso:</p>
+                                <ul style="margin-top: 5px; padding-left: 20px;">
+                                    <li>listar resultados;</li>
+                                    <li>definir X;</li>
+                                    <li>armar valores posibles;</li>
+                                    <li>revisar si aparece 0;</li>
+                                    <li>explicar el criterio usado.</li>
                                 </ul>
                             </div>
-                            <div style="margin-top: 15px;">
-                                <p><strong>Apoyos sugeridos:</strong></p>
-                                <ul>
-                                    <li>Camila Ruiz</li>
-                                    <li>Diego Pérez</li>
-                                </ul>
-                            </div>
-                            <div style="margin-top: 15px;">
-                                <p><strong>Actividad:</strong> Resolver ejercicios de conteo y comparar valores posibles.</p>
-                            </div>
+
                             <div class="card-actions" style="margin-top: 20px;">
                                 <button class="btn btn-primary" onclick="alert('Grupo creado para la semana. En una versión completa, JUNTOS enviaría invitaciones y propondría una actividad guiada.')">Crear grupo</button>
                             </div>
                         </div>
 
-                        <div class="stat-card teacher-card group-teacher-card">
-                            <h3>Grupo B &mdash; Función de distribución acumulada</h3>
-                            <p><strong>Motivo:</strong> 15 estudiantes confunden P(X=x) con P(X≤x).</p>
-                            <div style="margin-top: 15px;">
-                                <p><strong>Estudiantes:</strong></p>
-                                <ul>
-                                    <li>Lucas Fernández</li>
-                                    <li>Paula Gómez</li>
-                                    <li>Juan Méndez</li>
-                                </ul>
+                        <div class="stat-card teacher-card">
+                            <h3 style="color: var(--primary-color); border-bottom: 1px solid #eee; padding-bottom: 10px;">Grupo B &mdash; Función de distribución acumulada</h3>
+
+                            <div style="margin-top: 15px; overflow-x: auto;">
+                                <table class="group-role-table" style="width:100%; border-collapse:collapse; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom: 2px solid #ddd;">
+                                            <th style="padding:8px;">Estudiante</th>
+                                            <th style="padding:8px;">Rol</th>
+                                            <th style="padding:8px;">Motivo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="border-bottom: 1px solid #eee;">
+                                            <td style="padding:8px;">Lucas Fernández</td>
+                                            <td style="padding:8px;"><span class="role-badge role-refuerzo">Refuerzo conceptual</span></td>
+                                            <td style="padding:8px;">Confunde P(X=x) con P(X≤x).</td>
+                                        </tr>
+                                        <tr style="border-bottom: 1px solid #eee;">
+                                            <td style="padding:8px;">Paula Gómez</td>
+                                            <td style="padding:8px;"><span class="role-badge role-refuerzo">Refuerzo práctico</span></td>
+                                            <td style="padding:8px;">No acumula probabilidades.</td>
+                                        </tr>
+                                        <tr style="border-bottom: 1px solid #eee;">
+                                            <td style="padding:8px;">Juan Méndez</td>
+                                            <td style="padding:8px;"><span class="role-badge role-refuerzo">Refuerzo práctico</span></td>
+                                            <td style="padding:8px;">Construye F(x) incompleta.</td>
+                                        </tr>
+                                        <tr style="border-bottom: 1px solid #eee;">
+                                            <td style="padding:8px;">Camila Ruiz</td>
+                                            <td style="padding:8px;"><span class="role-badge role-apoyo">Apoyo par</span></td>
+                                            <td style="padding:8px;">Puede ayudar a verificar acumulaciones.</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:8px;">Ana Torres</td>
+                                            <td style="padding:8px;"><span class="role-badge role-opcional">Participación opcional</span></td>
+                                            <td style="padding:8px;">Puede reforzar conexión entre valores posibles y F(x).</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
+
                             <div style="margin-top: 15px;">
                                 <p><strong>Actividad:</strong> Construir F(x) paso a paso a partir de una tabla de probabilidades.</p>
                             </div>
+
                             <div class="card-actions" style="margin-top: 20px;">
                                 <button class="btn btn-primary" onclick="alert('Grupo creado para la semana. En una versión completa, JUNTOS enviaría invitaciones y propondría una actividad guiada.')">Crear grupo</button>
                             </div>
@@ -572,34 +727,77 @@ window.renderTeacherSection = function(target, sectionName, mainContentArea, mai
 
     if (target === 'consultas') {
         mainTitle.textContent = "Consultas docentes";
-        mainDesc.textContent = "Interactuá con JUNTOS para obtener insights sobre el progreso de tus estudiantes.";
+        mainDesc.textContent = "Consultá a JUNTOS sobre el avance de la semana, dificultades frecuentes y decisiones pedagógicas sugeridas.";
 
         mainContentArea.innerHTML = `
             <div class="teacher-dashboard">
+                ${weekContextHtml}
+                <section class="teacher-section">
+                    <div class="teacher-query-context-card stat-card">
+                        <h3 style="margin-top:0;">Semana activa: Semana 4 — Variables aleatorias discretas</h3>
+                        <p><strong>Datos considerados por JUNTOS:</strong></p>
+                        <ul style="margin-bottom:0; padding-left:20px; font-size:0.95rem;">
+                            <li>actividad de estudiantes;</li>
+                            <li>teoría guiada;</li>
+                            <li>consultas en resolución de ejercicios;</li>
+                            <li>ejercicios obligatorios;</li>
+                            <li>dificultades detectadas;</li>
+                            <li>grupos sugeridos;</li>
+                            <li>material cargado por la cátedra.</li>
+                        </ul>
+                    </div>
+                </section>
+
                 <section class="teacher-section">
                     <div class="teacher-query-box">
-                        <textarea id="teacher-ai-query" class="input-field" rows="4" placeholder="Preguntale a JUNTOS sobre el avance del curso, dificultades frecuentes o planificación de la próxima clase..."></textarea>
+                        <textarea id="teacher-ai-query" class="input-field" rows="4" placeholder="Preguntale a JUNTOS sobre el avance del curso, dificultades frecuentes, planificación de la próxima clase o estudiantes que requieren seguimiento..."></textarea>
 
-                        <div class="quick-queries" style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px;">
-                            <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué debería repasar en la próxima clase?')">¿Qué debería repasar en la próxima clase?</button>
-                            <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué estudiantes necesitan seguimiento?')">¿Qué estudiantes necesitan seguimiento?</button>
-                            <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué ejercicio resultó más difícil?')">¿Qué ejercicio resultó más difícil?</button>
-                            <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué grupo de estudio conviene crear?')">¿Qué grupo de estudio conviene crear?</button>
+                        <div class="teacher-query-categories" style="margin-top: 20px;">
+                            <div class="teacher-query-category">
+                                <h4>Categoría: Próxima clase</h4>
+                                <div class="quick-queries" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué debería repasar en la próxima clase?')">¿Qué debería repasar en la próxima clase?</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Cómo reordenaría la explicación de la semana?')">¿Cómo reordenaría la explicación de la semana?</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué ejemplo conviene resolver en vivo?')">¿Qué ejemplo conviene resolver en vivo?</button>
+                                </div>
+                            </div>
+
+                            <div class="teacher-query-category" style="margin-top: 15px;">
+                                <h4>Categoría: Seguimiento de estudiantes</h4>
+                                <div class="quick-queries" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué estudiantes necesitan seguimiento?')">¿Qué estudiantes necesitan seguimiento?</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué estudiantes están en riesgo alto?')">¿Qué estudiantes están en riesgo alto?</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué estudiantes pueden ayudar a otros?')">¿Qué estudiantes pueden ayudar a otros?</button>
+                                </div>
+                            </div>
+
+                            <div class="teacher-query-category" style="margin-top: 15px;">
+                                <h4>Categoría: Ejercicios y práctica</h4>
+                                <div class="quick-queries" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué ejercicio resultó más difícil?')">¿Qué ejercicio resultó más difícil?</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué errores se repiten en la guía?')">¿Qué errores se repiten en la guía?</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué ejercicios adicionales conviene recomendar?')">¿Qué ejercicios adicionales conviene recomendar?</button>
+                                </div>
+                            </div>
+
+                            <div class="teacher-query-category" style="margin-top: 15px;">
+                                <h4>Categoría: Grupos de estudio</h4>
+                                <div class="quick-queries" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué grupo de estudio conviene crear?')">¿Qué grupo de estudio conviene crear?</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué rol tendría cada estudiante en el grupo?')">¿Qué rol tendría cada estudiante en el grupo?</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué actividad debería hacer cada grupo?')">¿Qué actividad debería hacer cada grupo?</button>
+                                </div>
+                            </div>
                         </div>
 
-                        <div style="margin-top: 20px; text-align: right;">
+                        <div style="margin-top: 25px; text-align: right;">
                             <button class="btn btn-primary" onclick="simulateTeacherQuery(document.getElementById('teacher-ai-query').value)">Consultar a JUNTOS</button>
                         </div>
                     </div>
                 </section>
 
                 <section id="teacher-response-section" class="teacher-section" style="display:none;">
-                    <div class="teacher-response-card stat-card" style="border-top: 4px solid var(--primary-color);">
-                        <p><strong>Consulta:</strong> <span id="teacher-query-display"></span></p>
-                        <hr style="margin: 15px 0; border: 0; border-top: 1px solid var(--border-color);">
-                        <p><strong>Respuesta de JUNTOS:</strong></p>
-                        <p id="teacher-query-response"></p>
-                    </div>
+                    <div id="teacher-query-response"></div>
                 </section>
             </div>
         `;
@@ -647,21 +845,79 @@ window.simulateTeacherQuery = function(query) {
     if (!query || query.trim() === '') return;
 
     document.getElementById('teacher-ai-query').value = query;
-    document.getElementById('teacher-query-display').textContent = query;
 
     const responseEl = document.getElementById('teacher-query-response');
+    let htmlContent = '';
 
     if (query.includes('repasar') || query.includes('próxima clase')) {
-        responseEl.textContent = "Conviene dedicar los primeros minutos a función de distribución acumulada. Es el tema con mayor cantidad de errores en la semana. En particular, varios estudiantes confunden P(X=x) con P(X≤x). También conviene reforzar variables de conteo que pueden tomar el valor 0.";
-    } else if (query.includes('estudiantes necesitan')) {
-        responseEl.textContent = "Ana Torres y Diego Pérez. Ana tiene dificultad repetida en valores posibles. Diego lleva 7 días sin actividad y no inició la guía. Te sugiero enviar un mensaje de recuperación a Diego.";
-    } else if (query.includes('ejercicio resultó más difícil')) {
-        responseEl.textContent = "El Ejercicio 3 (Función de distribución discreta). El 42% de los estudiantes que lo intentaron cometieron el error de no acumular las probabilidades correctamente.";
-    } else if (query.includes('grupo de estudio conviene')) {
-        responseEl.textContent = "Sugiero crear el Grupo 1 (Valores posibles de variables discretas) con Ana Torres, Martín López y Sofía Díaz. Podés incluir a Camila Ruiz y Diego Pérez (que ya resolvieron esto bien) como apoyo.";
+        htmlContent = `
+            <div class="teacher-response-card">
+                <div class="teacher-response-section-title">Consulta:</div>
+                <p>${query}</p>
+
+                <div class="teacher-response-section-title">Síntesis de JUNTOS:</div>
+                <p>Conviene dedicar los primeros 10 minutos a función de distribución acumulada y luego reforzar variables de conteo que pueden tomar valor 0.</p>
+
+                <div class="teacher-response-section-title">Evidencia:</div>
+                <ul class="teacher-evidence-list">
+                    <li>15 estudiantes confundieron P(X=x) con P(X≤x).</li>
+                    <li>11 estudiantes omitieron el valor 0 en variables de conteo.</li>
+                    <li>El Ejercicio 3 concentró el mayor porcentaje de errores.</li>
+                </ul>
+
+                <div class="teacher-action-box">
+                    <strong style="display:block; margin-bottom:5px;">Acción sugerida:</strong>
+                    Resolver en clase un ejemplo corto donde primero se construya la función de probabilidad y luego la función de distribución acumulada.
+                </div>
+
+                <div class="teacher-next-step-box">
+                    <strong style="display:block; margin-bottom:5px;">Próximo paso:</strong>
+                    Activar un ejercicio adicional para estudiantes con dificultad y crear un grupo de estudio sobre valores posibles.
+                </div>
+            </div>
+        `;
+    } else if (query.includes('rol tendría cada estudiante')) {
+        htmlContent = `
+            <div class="teacher-response-card">
+                <div class="teacher-response-section-title">Consulta:</div>
+                <p>${query}</p>
+
+                <div class="teacher-response-section-title">Síntesis de JUNTOS:</div>
+                <p>El grupo debería combinar estudiantes con dificultad en valores posibles con estudiantes que ya resolvieron correctamente ejercicios de conteo.</p>
+
+                <div class="teacher-response-section-title">Roles sugeridos:</div>
+                <ul class="teacher-evidence-list" style="list-style:none; padding-left:0;">
+                    <li><strong>Ana Torres:</strong> estudiante en refuerzo. Debe practicar identificación de valores posibles.</li>
+                    <li><strong>Martín López:</strong> estudiante en refuerzo. Debe trabajar función de distribución desde una tabla.</li>
+                    <li><strong>Sofía Díaz:</strong> estudiante en refuerzo. Debe revisar parámetros de modelos discretos.</li>
+                    <li><strong>Camila Ruiz:</strong> apoyo par. Puede ayudar a revisar procedimientos sin dar respuestas.</li>
+                    <li><strong>Diego Pérez:</strong> recuperación guiada. Conviene integrarlo para reactivar participación.</li>
+                </ul>
+
+                <div class="teacher-action-box">
+                    <strong style="display:block; margin-bottom:5px;">Acción sugerida:</strong>
+                    Crear grupo con una actividad breve: listar resultados posibles, construir X y comparar respuestas.
+                </div>
+            </div>
+        `;
     } else {
-        responseEl.textContent = "En base al análisis de esta semana, los estudiantes están avanzando bien en teoría pero encuentran dificultades prácticas en ejercicios de conteo y acumulación. (Esta es una respuesta genérica de la demo).";
+        htmlContent = `
+            <div class="teacher-response-card">
+                <div class="teacher-response-section-title">Consulta:</div>
+                <p>${query}</p>
+
+                <div class="teacher-response-section-title">Síntesis de JUNTOS:</div>
+                <p>En base al análisis de esta semana, los estudiantes están avanzando bien en teoría pero encuentran dificultades prácticas en ejercicios de conteo y acumulación.</p>
+
+                <div class="teacher-action-box">
+                    <strong style="display:block; margin-bottom:5px;">Acción sugerida:</strong>
+                    (Esta es una respuesta genérica de la demo. Probá con las consultas rápidas para ver ejemplos completos).
+                </div>
+            </div>
+        `;
     }
+
+    responseEl.innerHTML = htmlContent;
 
     const responseSection = document.getElementById('teacher-response-section');
     if (responseSection) {

@@ -77,11 +77,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Automatically trigger "Inicio" on load if renderDemoSection is present
+    // Automatically trigger section on load
     if (window.renderDemoSection || window.renderTeacherSection) {
+        const activeItem = Array.from(menuItems).find(i => i.classList.contains('active'));
         const inicioItem = Array.from(menuItems).find(i => i.dataset.target === 'inicio');
-        if (inicioItem) {
-            inicioItem.click();
+        const dashboardItem = Array.from(menuItems).find(i => i.dataset.target === 'dashboard');
+
+        const defaultItem = activeItem || inicioItem || dashboardItem || menuItems[0];
+
+        if (defaultItem) {
+            defaultItem.click();
         }
     }
 });
