@@ -1240,3 +1240,272 @@ body.app-layout {
 .status-en_revision { background-color: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
 .status-resuelto { background-color: #e8f5e9; color: #1b5e20; border: 1px solid #c8e6c9; }
 .status-requiere_refuerzo { background-color: #ffebee; color: #b71c1c; border: 1px solid #ffcdd2; }
+
+/* ==========================================================================
+   Teacher Dashboard Specific Styles
+   ========================================================================== */
+
+.teacher-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.teacher-section {
+    background-color: transparent;
+}
+
+.teacher-section h2 {
+    font-size: 1.25rem;
+    color: var(--text-color);
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.teacher-summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.teacher-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.teacher-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+}
+
+.teacher-card h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    color: var(--text-color);
+}
+
+.teacher-card p {
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.teacher-alert-card {
+    border-left: 4px solid var(--primary-color);
+}
+
+.teacher-alert-card h3 {
+    margin-bottom: 5px;
+}
+
+.teacher-alert-card ul {
+    padding-left: 20px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+/* Risks Colors */
+.risk-high { color: #d9534f; font-weight: 600; }
+.risk-medium { color: #f0ad4e; font-weight: 600; }
+.risk-low { color: #5cb85c; font-weight: 600; }
+
+.teacher-alert-card.risk-high { border-left-color: #d9534f; }
+.teacher-alert-card.risk-medium { border-left-color: #f0ad4e; }
+.teacher-alert-card.risk-low { border-left-color: #5cb85c; }
+
+.badge.risk-high-bg { background-color: #d9534f; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;}
+.badge.risk-medium-bg { background-color: #f0ad4e; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;}
+.badge.risk-low-bg { background-color: #5cb85c; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;}
+
+
+/* Tables */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.teacher-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.teacher-table th, .teacher-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.teacher-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.teacher-table tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+.teacher-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Recommendations */
+.teacher-recommendation-card {
+    background-color: #e9ecef;
+    border-left: 5px solid var(--primary-color);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+}
+
+.teacher-recommendation-card h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.teacher-recommendation-card ol {
+    padding-left: 20px;
+    margin-bottom: 0;
+}
+
+.teacher-recommendation-card ol li {
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+/* Forms (Configurar Semana) */
+.teacher-form {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.teacher-form-group {
+    margin-bottom: 20px;
+}
+
+.teacher-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.teacher-form-group .input-field {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.teacher-form-group .input-field:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.1);
+}
+
+/* Material Upload */
+.material-upload-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 25px 15px;
+}
+
+.material-upload-card h4 {
+    margin: 0 0 10px 0;
+    font-size: 1.05rem;
+}
+
+.material-upload-card .file-status {
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.loaded-file-badge {
+    margin-top: 15px;
+    font-size: 0.85rem;
+    word-break: break-all;
+}
+
+/* AI Plan Card */
+.ai-plan-card {
+    background: #f8f9fa;
+    border: 2px solid var(--primary-color);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.ai-plan-card .plan-content h3 {
+    color: var(--text-color);
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+.ai-plan-card .plan-content h4 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.ai-plan-card ul, .ai-plan-card ol {
+    padding-left: 20px;
+    margin-bottom: 15px;
+}
+
+.ai-plan-card li {
+    margin-bottom: 5px;
+}
+
+/* Query Box */
+.teacher-query-box {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.teacher-response-card {
+    background-color: #f1f8ff;
+    border: 1px solid #cce5ff;
+}
+
+/* Lists */
+.teacher-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.teacher-list li {
+    background: var(--card-bg);
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+/* Group Teacher Card */
+.group-teacher-card ul {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 0.9rem;
+}
+.group-teacher-card p {
+    margin-bottom: 5px;
+}

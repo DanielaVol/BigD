@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const target = this.dataset.target;
 
             // Integración con demo adaptativa
-            if (window.renderDemoSection && window.renderDemoSection(target, sectionName, mainContentArea, mainTitle, mainDesc)) {
+            if ((window.renderTeacherSection && window.renderTeacherSection(target, sectionName, mainContentArea, mainTitle, mainDesc)) || (window.renderDemoSection && window.renderDemoSection(target, sectionName, mainContentArea, mainTitle, mainDesc))) {
                 return; // Demo handled rendering
             }
 
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Automatically trigger "Inicio" on load if renderDemoSection is present
-    if (window.renderDemoSection) {
+    if (window.renderDemoSection || window.renderTeacherSection) {
         const inicioItem = Array.from(menuItems).find(i => i.dataset.target === 'inicio');
         if (inicioItem) {
             inicioItem.click();
