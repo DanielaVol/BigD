@@ -1,4 +1,75 @@
 
+const GROUPING_CRITERIA = {
+  signals: [
+    "dificultad común",
+    "tipo de error",
+    "nivel de avance",
+    "actividad reciente",
+    "capacidad de apoyo par",
+    "objetivo pedagógico de la semana"
+  ],
+  roles: [
+    {
+      name: "Refuerzo conceptual",
+      description: "Estudiante que necesita revisar el concepto base.",
+      detectedWhen: [
+        "confusión conceptual repetida",
+        "dificultad en teoría guiada",
+        "no puede explicar qué representa la variable",
+        "confunde variable aleatoria con resultado"
+      ]
+    },
+    {
+      name: "Refuerzo práctico",
+      description: "Estudiante que entiende parcialmente el concepto pero falla al aplicarlo.",
+      detectedWhen: [
+        "empieza bien el ejercicio pero se equivoca en el procedimiento",
+        "falla al acumular probabilidades",
+        "necesita práctica guiada"
+      ]
+    },
+    {
+      name: "Recuperación guiada",
+      description: "Estudiante con baja actividad o atraso.",
+      detectedWhen: [
+        "varios días sin actividad",
+        "no inició la guía",
+        "diagnóstico pendiente",
+        "riesgo de abandono"
+      ]
+    },
+    {
+      name: "Apoyo par",
+      description: "Estudiante que ya resolvió bien y puede ayudar a otros.",
+      detectedWhen: [
+        "resolvió ejercicios correctamente",
+        "muestra buena comprensión",
+        "puede explicar pasos",
+        "bajo riesgo"
+      ]
+    },
+    {
+      name: "Coordinación de actividad",
+      description: "Estudiante con buen avance que puede ordenar la dinámica grupal.",
+      detectedWhen: [
+        "alta participación",
+        "buen avance general",
+        "interacción clara",
+        "capacidad de organizar"
+      ]
+    },
+    {
+      name: "Participación opcional",
+      description: "Estudiante que podría reforzar o participar sin ser prioridad.",
+      detectedWhen: [
+        "el tema del grupo no es su dificultad principal",
+        "puede beneficiarse igual",
+        "no requiere intervención prioritaria"
+      ]
+    }
+  ]
+};
+
 const TEACHER_WEEKS = [
   {
     id: "semana-1",
@@ -553,109 +624,119 @@ window.renderTeacherSection = function(target, sectionName, mainContentArea, mai
                             <h3 style="color: var(--primary-color); border-bottom: 1px solid #eee; padding-bottom: 10px;">Grupo A &mdash; Valores posibles de variables discretas</h3>
 
                             <div style="margin-top: 15px; overflow-x: auto;">
-                                <table class="group-role-table" style="width:100%; border-collapse:collapse; text-align:left;">
+                                <table class="group-role-table">
                                     <thead>
-                                        <tr style="border-bottom: 2px solid #ddd;">
-                                            <th style="padding:8px;">Estudiante</th>
-                                            <th style="padding:8px;">Rol</th>
-                                            <th style="padding:8px;">Motivo</th>
+                                        <tr>
+                                            <th>Estudiante</th>
+                                            <th>Rol</th>
+                                            <th>Motivo</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr style="border-bottom: 1px solid #eee;">
-                                            <td style="padding:8px;">Ana Torres</td>
-                                            <td style="padding:8px;"><span class="role-badge role-refuerzo">Refuerzo conceptual</span></td>
-                                            <td style="padding:8px;">Omite valores posibles, especialmente el 0.</td>
-                                        </tr>
-                                        <tr style="border-bottom: 1px solid #eee;">
-                                            <td style="padding:8px;">Martín López</td>
-                                            <td style="padding:8px;"><span class="role-badge role-refuerzo">Refuerzo práctico</span></td>
-                                            <td style="padding:8px;">Dificultad al pasar de valores posibles a función de distribución.</td>
-                                        </tr>
-                                        <tr style="border-bottom: 1px solid #eee;">
-                                            <td style="padding:8px;">Sofía Díaz</td>
-                                            <td style="padding:8px;"><span class="role-badge role-refuerzo">Refuerzo de modelos</span></td>
-                                            <td style="padding:8px;">Confunde cuándo usar Binomial.</td>
-                                        </tr>
-                                        <tr style="border-bottom: 1px solid #eee;">
-                                            <td style="padding:8px;">Camila Ruiz</td>
-                                            <td style="padding:8px;"><span class="role-badge role-apoyo">Apoyo par</span></td>
-                                            <td style="padding:8px;">Resolución correcta en ejercicios 1 y 2.</td>
+                                        <tr>
+                                            <td>Ana Torres</td>
+                                            <td><span class="role-badge role-refuerzo">Refuerzo conceptual</span></td>
+                                            <td>Omite valores posibles, especialmente el 0.</td>
                                         </tr>
                                         <tr>
-                                            <td style="padding:8px;">Diego Pérez</td>
-                                            <td style="padding:8px;"><span class="role-badge role-recuperacion">Recuperación guiada</span></td>
-                                            <td style="padding:8px;">Baja actividad, conviene integrarlo al trabajo grupal.</td>
+                                            <td>Martín López</td>
+                                            <td><span class="role-badge role-practico">Refuerzo práctico</span></td>
+                                            <td>Dificultad al pasar de valores posibles a función de distribución.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sofía Díaz</td>
+                                            <td><span class="role-badge role-refuerzo">Refuerzo de modelos</span></td>
+                                            <td>Confunde cuándo usar Binomial.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Camila Ruiz</td>
+                                            <td><span class="role-badge role-apoyo">Apoyo par</span></td>
+                                            <td>Resolución correcta en ejercicios 1 y 2.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Diego Pérez</td>
+                                            <td><span class="role-badge role-recuperacion">Recuperación guiada</span></td>
+                                            <td>Baja actividad, conviene integrarlo al trabajo grupal.</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
 
-                            <div style="margin-top: 15px;">
-                                <p><strong>Actividad sugerida:</strong> Resolver ejercicios de conteo y comparar valores posibles.</p>
-                                <p style="margin-top: 5px;"><strong>Producto del grupo:</strong> Cada estudiante debe explicar un paso:</p>
-                                <ul style="margin-top: 5px; padding-left: 20px;">
+                            <div style="margin-top: 20px; background-color: #f8f9fa; padding: 15px; border-radius: 6px;">
+                                <strong style="display:block; margin-bottom:5px;">Actividad sugerida:</strong>
+                                <p style="font-size: 0.95rem; margin-top: 0;">Resolver ejercicios de conteo y comparar valores posibles.</p>
+
+                                <strong style="display:block; margin-bottom:5px; margin-top: 10px;">Producto esperado:</strong>
+                                <p style="font-size: 0.95rem; margin-top: 0;">Cada estudiante debe explicar un paso:</p>
+                                <ol style="font-size: 0.95rem; margin-top: 0; padding-left: 20px;">
                                     <li>listar resultados;</li>
                                     <li>definir X;</li>
                                     <li>armar valores posibles;</li>
                                     <li>revisar si aparece 0;</li>
                                     <li>explicar el criterio usado.</li>
-                                </ul>
+                                </ol>
+
+                                <strong style="display:block; margin-bottom:5px; margin-top: 10px;">Duración sugerida:</strong>
+                                <p style="font-size: 0.95rem; margin-top: 0;">20 minutos.</p>
+
+                                <button class="btn btn-primary btn-sm" style="margin-top: 10px;" onclick="alert('Grupo creado exitosamente. Se notificará a los estudiantes.')">Crear grupo y notificar</button>
                             </div>
 
-                            <div class="card-actions" style="margin-top: 20px;">
-                                <button class="btn btn-primary" onclick="alert('Grupo creado para la semana. En una versión completa, JUNTOS enviaría invitaciones y propondría una actividad guiada.')">Crear grupo</button>
-                            </div>
                         </div>
 
                         <div class="stat-card teacher-card">
                             <h3 style="color: var(--primary-color); border-bottom: 1px solid #eee; padding-bottom: 10px;">Grupo B &mdash; Función de distribución acumulada</h3>
 
                             <div style="margin-top: 15px; overflow-x: auto;">
-                                <table class="group-role-table" style="width:100%; border-collapse:collapse; text-align:left;">
+                                <table class="group-role-table">
                                     <thead>
-                                        <tr style="border-bottom: 2px solid #ddd;">
-                                            <th style="padding:8px;">Estudiante</th>
-                                            <th style="padding:8px;">Rol</th>
-                                            <th style="padding:8px;">Motivo</th>
+                                        <tr>
+                                            <th>Estudiante</th>
+                                            <th>Rol</th>
+                                            <th>Motivo</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr style="border-bottom: 1px solid #eee;">
-                                            <td style="padding:8px;">Lucas Fernández</td>
-                                            <td style="padding:8px;"><span class="role-badge role-refuerzo">Refuerzo conceptual</span></td>
-                                            <td style="padding:8px;">Confunde P(X=x) con P(X≤x).</td>
-                                        </tr>
-                                        <tr style="border-bottom: 1px solid #eee;">
-                                            <td style="padding:8px;">Paula Gómez</td>
-                                            <td style="padding:8px;"><span class="role-badge role-refuerzo">Refuerzo práctico</span></td>
-                                            <td style="padding:8px;">No acumula probabilidades.</td>
-                                        </tr>
-                                        <tr style="border-bottom: 1px solid #eee;">
-                                            <td style="padding:8px;">Juan Méndez</td>
-                                            <td style="padding:8px;"><span class="role-badge role-refuerzo">Refuerzo práctico</span></td>
-                                            <td style="padding:8px;">Construye F(x) incompleta.</td>
-                                        </tr>
-                                        <tr style="border-bottom: 1px solid #eee;">
-                                            <td style="padding:8px;">Camila Ruiz</td>
-                                            <td style="padding:8px;"><span class="role-badge role-apoyo">Apoyo par</span></td>
-                                            <td style="padding:8px;">Puede ayudar a verificar acumulaciones.</td>
+                                        <tr>
+                                            <td>Lucas Fernández</td>
+                                            <td><span class="role-badge role-refuerzo">Refuerzo conceptual</span></td>
+                                            <td>Confunde P(X=x) con P(X≤x).</td>
                                         </tr>
                                         <tr>
-                                            <td style="padding:8px;">Ana Torres</td>
-                                            <td style="padding:8px;"><span class="role-badge role-opcional">Participación opcional</span></td>
-                                            <td style="padding:8px;">Puede reforzar conexión entre valores posibles y F(x).</td>
+                                            <td>Paula Gómez</td>
+                                            <td><span class="role-badge role-practico">Refuerzo práctico</span></td>
+                                            <td>No acumula probabilidades.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Juan Méndez</td>
+                                            <td><span class="role-badge role-practico">Refuerzo práctico</span></td>
+                                            <td>Construye F(x) incompleta.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Camila Ruiz</td>
+                                            <td><span class="role-badge role-apoyo">Apoyo par</span></td>
+                                            <td>Puede ayudar a verificar acumulaciones.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ana Torres</td>
+                                            <td><span class="role-badge role-opcional">Participación opcional</span></td>
+                                            <td>Puede reforzar conexión entre valores posibles y F(x).</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
 
-                            <div style="margin-top: 15px;">
-                                <p><strong>Actividad:</strong> Construir F(x) paso a paso a partir de una tabla de probabilidades.</p>
-                            </div>
+                            <div style="margin-top: 20px; background-color: #f8f9fa; padding: 15px; border-radius: 6px;">
+                                <strong style="display:block; margin-bottom:5px;">Actividad sugerida:</strong>
+                                <p style="font-size: 0.95rem; margin-top: 0;">Revisar diferencia conceptual mediante ejemplos.</p>
 
-                            <div class="card-actions" style="margin-top: 20px;">
-                                <button class="btn btn-primary" onclick="alert('Grupo creado para la semana. En una versión completa, JUNTOS enviaría invitaciones y propondría una actividad guiada.')">Crear grupo</button>
+                                <strong style="display:block; margin-bottom:5px; margin-top: 10px;">Producto esperado:</strong>
+                                <p style="font-size: 0.95rem; margin-top: 0;">Actividad corta de construcción de tabla a partir de gráfico.</p>
+
+                                <strong style="display:block; margin-bottom:5px; margin-top: 10px;">Duración sugerida:</strong>
+                                <p style="font-size: 0.95rem; margin-top: 0;">15 minutos.</p>
+
+                                <button class="btn btn-primary btn-sm" style="margin-top: 10px;" onclick="alert('Grupo creado exitosamente. Se notificará a los estudiantes.')">Crear grupo y notificar</button>
                             </div>
                         </div>
 
@@ -727,78 +808,119 @@ window.renderTeacherSection = function(target, sectionName, mainContentArea, mai
 
     if (target === 'consultas') {
         mainTitle.textContent = "Consultas docentes";
-        mainDesc.textContent = "Consultá a JUNTOS sobre el avance de la semana, dificultades frecuentes y decisiones pedagógicas sugeridas.";
+        mainDesc.textContent = "Preguntale a JUNTOS sobre el avance de la semana, dificultades frecuentes y decisiones pedagógicas sugeridas.";
 
         mainContentArea.innerHTML = `
             <div class="teacher-dashboard">
                 ${weekContextHtml}
-                <section class="teacher-section">
-                    <div class="teacher-query-context-card stat-card">
-                        <h3 style="margin-top:0;">Semana activa: Semana 4 — Variables aleatorias discretas</h3>
-                        <p><strong>Datos considerados por JUNTOS:</strong></p>
-                        <ul style="margin-bottom:0; padding-left:20px; font-size:0.95rem;">
-                            <li>actividad de estudiantes;</li>
-                            <li>teoría guiada;</li>
-                            <li>consultas en resolución de ejercicios;</li>
-                            <li>ejercicios obligatorios;</li>
-                            <li>dificultades detectadas;</li>
-                            <li>grupos sugeridos;</li>
-                            <li>material cargado por la cátedra.</li>
-                        </ul>
+
+                <div class="teacher-consultas-layout">
+                    <!-- Columna Izquierda: Contexto -->
+                    <div class="teacher-context-column">
+                        <div class="teacher-query-context-card stat-card" style="margin-bottom: 20px;">
+                            <h3 style="margin-top:0;">Semana activa</h3>
+                            <p style="margin-top: 5px; margin-bottom: 15px;"><strong>Semana 4 — Variables aleatorias discretas</strong></p>
+                            <p><strong>Datos considerados por JUNTOS:</strong></p>
+                            <ul style="margin-bottom:15px; padding-left:20px; font-size:0.95rem;">
+                                <li>teoría guiada;</li>
+                                <li>consultas en resolución de ejercicios;</li>
+                                <li>ejercicios obligatorios;</li>
+                                <li>dificultades detectadas;</li>
+                                <li>actividad reciente;</li>
+                                <li>grupos sugeridos;</li>
+                                <li>material cargado por la cátedra.</li>
+                            </ul>
+                            <p style="font-size: 0.85rem; color: #666; font-style: italic;">
+                                En una implementación real, estas respuestas se generarían a partir de los eventos guardados en la plataforma y los criterios pedagógicos configurados por el docente.
+                            </p>
+                        </div>
+
+                        <div class="teacher-signal-list stat-card" style="margin-bottom: 20px;">
+                            <h3 style="margin-top:0;">Señales de esta semana</h3>
+                            <ul style="margin-bottom:0; padding-left:20px; font-size:0.95rem;">
+                                <li>18 estudiantes tienen dificultad con valores posibles.</li>
+                                <li>15 estudiantes confunden función de probabilidad con función de distribución.</li>
+                                <li>11 estudiantes omiten el valor 0 en variables de conteo.</li>
+                                <li>5 estudiantes no ingresan hace más de una semana.</li>
+                                <li>3 estudiantes pueden actuar como apoyo par.</li>
+                            </ul>
+                        </div>
+
+                        <div class="grouping-criteria-card stat-card">
+                            <h3 style="margin-top:0;">Criterios de agrupamiento de JUNTOS</h3>
+                            <p>JUNTOS arma grupos según:</p>
+                            <ul style="margin-bottom:15px; padding-left:20px; font-size:0.95rem;">
+                                <li>dificultad común;</li>
+                                <li>tipo de error;</li>
+                                <li>nivel de avance;</li>
+                                <li>actividad reciente;</li>
+                                <li>posibilidad de apoyo entre pares;</li>
+                                <li>objetivo pedagógico de la semana.</li>
+                            </ul>
+                            <p><strong>Roles posibles:</strong></p>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                                <span class="role-badge role-refuerzo">Refuerzo conceptual</span>
+                                <span class="role-badge role-practico">Refuerzo práctico</span>
+                                <span class="role-badge role-recuperacion">Recuperación guiada</span>
+                                <span class="role-badge role-apoyo">Apoyo par</span>
+                                <span class="role-badge role-coordinacion">Coordinación de actividad</span>
+                                <span class="role-badge role-opcional">Participación opcional</span>
+                            </div>
+                        </div>
                     </div>
-                </section>
 
-                <section class="teacher-section">
-                    <div class="teacher-query-box">
-                        <textarea id="teacher-ai-query" class="input-field" rows="4" placeholder="Preguntale a JUNTOS sobre el avance del curso, dificultades frecuentes, planificación de la próxima clase o estudiantes que requieren seguimiento..."></textarea>
-
-                        <div class="teacher-query-categories" style="margin-top: 20px;">
-                            <div class="teacher-query-category">
-                                <h4>Categoría: Próxima clase</h4>
-                                <div class="quick-queries" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué debería repasar en la próxima clase?')">¿Qué debería repasar en la próxima clase?</button>
-                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Cómo reordenaría la explicación de la semana?')">¿Cómo reordenaría la explicación de la semana?</button>
-                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué ejemplo conviene resolver en vivo?')">¿Qué ejemplo conviene resolver en vivo?</button>
-                                </div>
+                    <!-- Columna Derecha: Consultas -->
+                    <div class="teacher-query-column">
+                        <div class="teacher-query-box" style="background: var(--card-bg); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow);">
+                            <textarea id="teacher-ai-query" class="input-field" rows="4" placeholder="Preguntale a JUNTOS sobre el avance del curso, planificación de la próxima clase, estudiantes que requieren seguimiento o grupos de estudio..."></textarea>
+                            <div style="margin-top: 15px; text-align: right;">
+                                <button class="btn btn-primary" onclick="simulateTeacherQuery(document.getElementById('teacher-ai-query').value)">Consultar a JUNTOS</button>
                             </div>
 
-                            <div class="teacher-query-category" style="margin-top: 15px;">
-                                <h4>Categoría: Seguimiento de estudiantes</h4>
-                                <div class="quick-queries" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué estudiantes necesitan seguimiento?')">¿Qué estudiantes necesitan seguimiento?</button>
-                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué estudiantes están en riesgo alto?')">¿Qué estudiantes están en riesgo alto?</button>
-                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué estudiantes pueden ayudar a otros?')">¿Qué estudiantes pueden ayudar a otros?</button>
+                            <div class="teacher-query-categories" style="margin-top: 25px;">
+                                <div class="teacher-query-category stat-card">
+                                    <h4>Próxima clase</h4>
+                                    <div class="quick-queries">
+                                        <button class="btn btn-secondary btn-sm quick-query-btn" onclick="simulateTeacherQuery('¿Qué debería repasar en la próxima clase?')">¿Qué debería repasar en la próxima clase?</button>
+                                        <button class="btn btn-secondary btn-sm quick-query-btn" onclick="simulateTeacherQuery('¿Cómo reordenaría la explicación de la semana?')">¿Cómo reordenaría la explicación de la semana?</button>
+                                        <button class="btn btn-secondary btn-sm quick-query-btn" onclick="simulateTeacherQuery('¿Qué ejemplo conviene resolver en vivo?')">¿Qué ejemplo conviene resolver en vivo?</button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="teacher-query-category" style="margin-top: 15px;">
-                                <h4>Categoría: Ejercicios y práctica</h4>
-                                <div class="quick-queries" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué ejercicio resultó más difícil?')">¿Qué ejercicio resultó más difícil?</button>
-                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué errores se repiten en la guía?')">¿Qué errores se repiten en la guía?</button>
-                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué ejercicios adicionales conviene recomendar?')">¿Qué ejercicios adicionales conviene recomendar?</button>
+                                <div class="teacher-query-category stat-card">
+                                    <h4>Seguimiento de estudiantes</h4>
+                                    <div class="quick-queries">
+                                        <button class="btn btn-secondary btn-sm quick-query-btn" onclick="simulateTeacherQuery('¿Qué estudiantes necesitan seguimiento?')">¿Qué estudiantes necesitan seguimiento?</button>
+                                        <button class="btn btn-secondary btn-sm quick-query-btn" onclick="simulateTeacherQuery('¿Qué estudiantes están en riesgo alto?')">¿Qué estudiantes están en riesgo alto?</button>
+                                        <button class="btn btn-secondary btn-sm quick-query-btn" onclick="simulateTeacherQuery('¿Qué estudiantes pueden ayudar a otros?')">¿Qué estudiantes pueden ayudar a otros?</button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="teacher-query-category" style="margin-top: 15px;">
-                                <h4>Categoría: Grupos de estudio</h4>
-                                <div class="quick-queries" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué grupo de estudio conviene crear?')">¿Qué grupo de estudio conviene crear?</button>
-                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué rol tendría cada estudiante en el grupo?')">¿Qué rol tendría cada estudiante en el grupo?</button>
-                                    <button class="btn btn-secondary btn-sm" onclick="simulateTeacherQuery('¿Qué actividad debería hacer cada grupo?')">¿Qué actividad debería hacer cada grupo?</button>
+                                <div class="teacher-query-category stat-card">
+                                    <h4>Ejercicios y práctica</h4>
+                                    <div class="quick-queries">
+                                        <button class="btn btn-secondary btn-sm quick-query-btn" onclick="simulateTeacherQuery('¿Qué ejercicio resultó más difícil?')">¿Qué ejercicio resultó más difícil?</button>
+                                        <button class="btn btn-secondary btn-sm quick-query-btn" onclick="simulateTeacherQuery('¿Qué errores se repiten en la guía?')">¿Qué errores se repiten en la guía?</button>
+                                        <button class="btn btn-secondary btn-sm quick-query-btn" onclick="simulateTeacherQuery('¿Qué ejercicios adicionales conviene recomendar?')">¿Qué ejercicios adicionales conviene recomendar?</button>
+                                    </div>
+                                </div>
+
+                                <div class="teacher-query-category stat-card">
+                                    <h4>Grupos de estudio</h4>
+                                    <div class="quick-queries">
+                                        <button class="btn btn-secondary btn-sm quick-query-btn" onclick="simulateTeacherQuery('¿Qué grupo de estudio conviene crear?')">¿Qué grupo de estudio conviene crear?</button>
+                                        <button class="btn btn-secondary btn-sm quick-query-btn" onclick="simulateTeacherQuery('¿Qué rol tendría cada estudiante en el grupo?')">¿Qué rol tendría cada estudiante en el grupo?</button>
+                                        <button class="btn btn-secondary btn-sm quick-query-btn" onclick="simulateTeacherQuery('¿Cuál debería ser la actividad del grupo?')">¿Cuál debería ser la actividad del grupo?</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div style="margin-top: 25px; text-align: right;">
-                            <button class="btn btn-primary" onclick="simulateTeacherQuery(document.getElementById('teacher-ai-query').value)">Consultar a JUNTOS</button>
-                        </div>
+                        <section id="teacher-response-section" style="display:none; margin-top: 20px;">
+                            <div id="teacher-query-response"></div>
+                        </section>
                     </div>
-                </section>
-
-                <section id="teacher-response-section" class="teacher-section" style="display:none;">
-                    <div id="teacher-query-response"></div>
-                </section>
+                </div>
             </div>
         `;
         return true;
@@ -848,70 +970,208 @@ window.simulateTeacherQuery = function(query) {
 
     const responseEl = document.getElementById('teacher-query-response');
     let htmlContent = '';
+    const q = query.toLowerCase();
 
-    if (query.includes('repasar') || query.includes('próxima clase')) {
+    if (q.includes('repasar') || q.includes('próxima clase')) {
         htmlContent = `
             <div class="teacher-response-card">
-                <div class="teacher-response-section-title">Consulta:</div>
-                <p>${query}</p>
+                <div class="teacher-response-header">Consulta realizada:</div>
+                <p style="font-style: italic;">"${query}"</p>
 
-                <div class="teacher-response-section-title">Síntesis de JUNTOS:</div>
-                <p>Conviene dedicar los primeros 10 minutos a función de distribución acumulada y luego reforzar variables de conteo que pueden tomar valor 0.</p>
+                <div class="teacher-response-block">
+                    <div class="teacher-response-section-title">Síntesis de JUNTOS:</div>
+                    <p>Conviene dedicar los primeros 10 minutos a función de distribución acumulada y luego reforzar variables de conteo que pueden tomar valor 0.</p>
+                </div>
 
-                <div class="teacher-response-section-title">Evidencia:</div>
-                <ul class="teacher-evidence-list">
-                    <li>15 estudiantes confundieron P(X=x) con P(X≤x).</li>
-                    <li>11 estudiantes omitieron el valor 0 en variables de conteo.</li>
-                    <li>El Ejercicio 3 concentró el mayor porcentaje de errores.</li>
-                </ul>
+                <div class="teacher-response-block">
+                    <div class="teacher-response-section-title">Evidencia:</div>
+                    <ul class="teacher-evidence-list">
+                        <li>15 estudiantes confundieron P(X=x) con P(X≤x).</li>
+                        <li>11 estudiantes omitieron el valor 0 en variables de conteo.</li>
+                        <li>El Ejercicio 3 concentró el mayor porcentaje de errores.</li>
+                    </ul>
+                </div>
 
                 <div class="teacher-action-box">
-                    <strong style="display:block; margin-bottom:5px;">Acción sugerida:</strong>
+                    <strong style="display:block; margin-bottom:5px; color: var(--primary-color);">Acción sugerida:</strong>
                     Resolver en clase un ejemplo corto donde primero se construya la función de probabilidad y luego la función de distribución acumulada.
                 </div>
 
                 <div class="teacher-next-step-box">
-                    <strong style="display:block; margin-bottom:5px;">Próximo paso:</strong>
+                    <strong style="display:block; margin-bottom:5px; color: #e65100;">Próximo paso:</strong>
                     Activar un ejercicio adicional para estudiantes con dificultad y crear un grupo de estudio sobre valores posibles.
                 </div>
             </div>
         `;
-    } else if (query.includes('rol tendría cada estudiante')) {
+    } else if (q.includes('estudiantes necesitan') || q.includes('riesgo') || q.includes('ayudar a otros')) {
         htmlContent = `
             <div class="teacher-response-card">
-                <div class="teacher-response-section-title">Consulta:</div>
-                <p>${query}</p>
+                <div class="teacher-response-header">Consulta realizada:</div>
+                <p style="font-style: italic;">"${query}"</p>
 
-                <div class="teacher-response-section-title">Síntesis de JUNTOS:</div>
-                <p>El grupo debería combinar estudiantes con dificultad en valores posibles con estudiantes que ya resolvieron correctamente ejercicios de conteo.</p>
+                <div class="teacher-response-block">
+                    <div class="teacher-response-section-title">Síntesis de JUNTOS:</div>
+                    <p>Hay estudiantes que requieren intervenciones distintas: algunos necesitan refuerzo conceptual, otros recuperación por inactividad y otros pueden actuar como apoyo par.</p>
+                </div>
 
-                <div class="teacher-response-section-title">Roles sugeridos:</div>
-                <ul class="teacher-evidence-list" style="list-style:none; padding-left:0;">
-                    <li><strong>Ana Torres:</strong> estudiante en refuerzo. Debe practicar identificación de valores posibles.</li>
-                    <li><strong>Martín López:</strong> estudiante en refuerzo. Debe trabajar función de distribución desde una tabla.</li>
-                    <li><strong>Sofía Díaz:</strong> estudiante en refuerzo. Debe revisar parámetros de modelos discretos.</li>
-                    <li><strong>Camila Ruiz:</strong> apoyo par. Puede ayudar a revisar procedimientos sin dar respuestas.</li>
-                    <li><strong>Diego Pérez:</strong> recuperación guiada. Conviene integrarlo para reactivar participación.</li>
-                </ul>
+                <div class="teacher-response-block">
+                    <div class="teacher-response-section-title">Evidencia:</div>
+                    <ul class="teacher-evidence-list">
+                        <li>Ana Torres repite dificultad en valores posibles.</li>
+                        <li>Diego Pérez lleva 7 días sin actividad.</li>
+                        <li>Camila Ruiz resolvió correctamente ejercicios 1 y 2.</li>
+                    </ul>
+                </div>
 
                 <div class="teacher-action-box">
-                    <strong style="display:block; margin-bottom:5px;">Acción sugerida:</strong>
-                    Crear grupo con una actividad breve: listar resultados posibles, construir X y comparar respuestas.
+                    <strong style="display:block; margin-bottom:5px; color: var(--primary-color);">Acción sugerida:</strong>
+                    Enviar mensaje de recuperación a Diego, recomendar refuerzo a Ana e invitar a Camila como apoyo par.
+                </div>
+
+                <div class="teacher-next-step-box">
+                    <strong style="display:block; margin-bottom:5px; color: #e65100;">Próximo paso:</strong>
+                    Revisar detalle de estudiantes en la pantalla Estudiantes.
+                </div>
+            </div>
+        `;
+    } else if (q.includes('ejercicio') || q.includes('errores')) {
+        htmlContent = `
+            <div class="teacher-response-card">
+                <div class="teacher-response-header">Consulta realizada:</div>
+                <p style="font-style: italic;">"${query}"</p>
+
+                <div class="teacher-response-block">
+                    <div class="teacher-response-section-title">Síntesis de JUNTOS:</div>
+                    <p>El Ejercicio 3 fue el más problemático porque requiere pasar de función de probabilidad a función de distribución acumulada.</p>
+                </div>
+
+                <div class="teacher-response-block">
+                    <div class="teacher-response-section-title">Evidencia:</div>
+                    <ul class="teacher-evidence-list">
+                        <li>42% de errores en Ejercicio 3.</li>
+                        <li>Error frecuente: no acumulan probabilidades.</li>
+                        <li>Varios estudiantes confunden P(X=x) con P(X≤x).</li>
+                    </ul>
+                </div>
+
+                <div class="teacher-action-box">
+                    <strong style="display:block; margin-bottom:5px; color: var(--primary-color);">Acción sugerida:</strong>
+                    Agregar un ejemplo guiado previo antes de pedir el ejercicio completo.
+                </div>
+
+                <div class="teacher-next-step-box">
+                    <strong style="display:block; margin-bottom:5px; color: #e65100;">Próximo paso:</strong>
+                    Recomendar ejercicio adicional sobre construcción de F(x).
+                </div>
+            </div>
+        `;
+    } else if (q.includes('grupo') || q.includes('rol')) {
+        htmlContent = `
+            <div class="teacher-response-card">
+                <div class="teacher-response-header">Consulta realizada:</div>
+                <p style="font-style: italic;">"${query}"</p>
+
+                <div class="teacher-response-block">
+                    <div class="teacher-response-section-title">Síntesis de JUNTOS:</div>
+                    <p>El grupo debe combinar estudiantes con dificultad común y estudiantes que puedan actuar como apoyo.</p>
+                </div>
+
+                <div class="teacher-response-block">
+                    <div class="teacher-response-section-title">Evidencia:</div>
+                    <ul class="teacher-evidence-list">
+                        <li>Ana, Martín y Sofía muestran dificultades relacionadas con valores posibles y modelos discretos.</li>
+                        <li>Camila resolvió bien ejercicios iniciales.</li>
+                        <li>Diego necesita recuperación guiada por baja actividad.</li>
+                    </ul>
+                </div>
+
+                <div class="teacher-response-block">
+                    <div class="teacher-response-section-title">Roles sugeridos:</div>
+                    <div style="overflow-x: auto;">
+                        <table class="group-role-table">
+                            <thead>
+                                <tr>
+                                    <th>Estudiante</th>
+                                    <th>Rol</th>
+                                    <th>Evidencia</th>
+                                    <th>Objetivo dentro del grupo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Ana Torres</td>
+                                    <td><span class="role-badge role-refuerzo">Refuerzo conceptual</span></td>
+                                    <td>Omite valores posibles, especialmente el 0</td>
+                                    <td>Practicar identificación de valores de X.</td>
+                                </tr>
+                                <tr>
+                                    <td>Martín López</td>
+                                    <td><span class="role-badge role-practico">Refuerzo práctico</span></td>
+                                    <td>Dificultad al pasar de valores posibles a F(x)</td>
+                                    <td>Construir función de distribución desde tabla.</td>
+                                </tr>
+                                <tr>
+                                    <td>Sofía Díaz</td>
+                                    <td><span class="role-badge role-refuerzo">Refuerzo de modelos</span></td>
+                                    <td>Confunde cuándo usar Binomial</td>
+                                    <td>Identificar parámetros y tipo de modelo.</td>
+                                </tr>
+                                <tr>
+                                    <td>Camila Ruiz</td>
+                                    <td><span class="role-badge role-apoyo">Apoyo par</span></td>
+                                    <td>Resolución correcta en ejercicios 1 y 2</td>
+                                    <td>Ayudar a revisar procedimientos sin dar respuestas.</td>
+                                </tr>
+                                <tr>
+                                    <td>Diego Pérez</td>
+                                    <td><span class="role-badge role-recuperacion">Recuperación guiada</span></td>
+                                    <td>Baja actividad reciente</td>
+                                    <td>Reengancharse con actividad grupal breve.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="teacher-action-box">
+                    <strong style="display:block; margin-bottom:5px; color: var(--primary-color);">Acción sugerida:</strong>
+                    Crear el grupo con una actividad de 20 minutos centrada en listar resultados, definir X y revisar si aparece el valor 0.
+                </div>
+
+                <div class="teacher-next-step-box">
+                    <strong style="display:block; margin-bottom:5px; color: #e65100;">Próximo paso:</strong>
+                    Ir a Grupos sugeridos y crear el grupo.
                 </div>
             </div>
         `;
     } else {
         htmlContent = `
             <div class="teacher-response-card">
-                <div class="teacher-response-section-title">Consulta:</div>
-                <p>${query}</p>
+                <div class="teacher-response-header">Consulta realizada:</div>
+                <p style="font-style: italic;">"${query}"</p>
 
-                <div class="teacher-response-section-title">Síntesis de JUNTOS:</div>
-                <p>En base al análisis de esta semana, los estudiantes están avanzando bien en teoría pero encuentran dificultades prácticas en ejercicios de conteo y acumulación.</p>
+                <div class="teacher-response-block">
+                    <div class="teacher-response-section-title">Síntesis de JUNTOS:</div>
+                    <p>La semana avanza bien en teoría, pero hay dificultades prácticas concentradas en valores posibles, función de distribución y selección de modelo.</p>
+                </div>
+
+                <div class="teacher-response-block">
+                    <div class="teacher-response-section-title">Evidencia:</div>
+                    <ul class="teacher-evidence-list">
+                        <li>14 estudiantes en riesgo.</li>
+                        <li>Ejercicio 3 es el más problemático.</li>
+                        <li>18 estudiantes muestran dificultad con valores posibles.</li>
+                    </ul>
+                </div>
 
                 <div class="teacher-action-box">
-                    <strong style="display:block; margin-bottom:5px;">Acción sugerida:</strong>
-                    (Esta es una respuesta genérica de la demo. Probá con las consultas rápidas para ver ejemplos completos).
+                    <strong style="display:block; margin-bottom:5px; color: var(--primary-color);">Acción sugerida:</strong>
+                    Priorizar intervenciones breves y focalizadas antes de avanzar a nuevos modelos.
+                </div>
+
+                <div class="teacher-next-step-box">
+                    <strong style="display:block; margin-bottom:5px; color: #e65100;">Próximo paso:</strong>
+                    Revisar Dashboard y Grupos sugeridos.
                 </div>
             </div>
         `;

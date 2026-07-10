@@ -1473,17 +1473,6 @@ body.app-layout {
 }
 
 /* Query Box */
-.teacher-query-box {
-    background: var(--card-bg);
-    padding: 20px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-}
-
-.teacher-response-card {
-    background-color: #f1f8ff;
-    border: 1px solid #cce5ff;
-}
 
 /* Lists */
 .teacher-list {
@@ -1511,6 +1500,35 @@ body.app-layout {
 }
 
 /* Nuevos estilos - Docente vista y roles */
+.teacher-consultas-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+}
+
+@media (min-width: 992px) {
+    .teacher-consultas-layout {
+        grid-template-columns: 350px 1fr;
+    }
+}
+
+.teacher-context-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.teacher-query-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.teacher-query-box {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
 .teacher-week-context {
     background-color: #e3f2fd;
     border-left: 4px solid #1e88e5;
@@ -1519,45 +1537,96 @@ body.app-layout {
     border-radius: 4px;
 }
 
-.teacher-query-context-card {
-    background-color: #f5f5f5;
-    border: 1px solid #e0e0e0;
+.teacher-query-context-card,
+.teacher-signal-list,
+.grouping-criteria-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 18px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
 }
 
 .teacher-query-categories {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 15px;
 }
 
+.teacher-query-category {
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    padding: 15px;
+    border-radius: 8px;
+}
+
 .teacher-query-category h4 {
-    margin: 0 0 8px 0;
+    margin: 0 0 12px 0;
     color: #424242;
     font-size: 0.95rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 6px;
+}
+
+.quick-queries {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quick-query-btn {
+    text-align: left;
+    white-space: normal;
+    height: auto;
+    padding: 8px 12px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    color: #333;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.quick-query-btn:hover {
+    background-color: #f0f0f0;
+    border-color: #999;
 }
 
 .teacher-response-card {
-    background-color: #f9f9f9;
-    border: 1px solid #dcdcdc;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
     border-left: 4px solid var(--primary-color);
-    padding: 20px;
+    padding: 25px;
     border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.teacher-response-header {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.teacher-response-block {
+    margin-top: 20px;
 }
 
 .teacher-response-section-title {
     font-weight: 600;
-    margin-top: 15px;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     color: var(--text-color);
-}
-
-.teacher-response-section-title:first-child {
-    margin-top: 0;
+    font-size: 1.05rem;
 }
 
 .teacher-evidence-list {
-    margin: 0 0 15px 0;
+    margin: 0;
     padding-left: 20px;
+    color: #444;
+}
+
+.teacher-evidence-list li {
+    margin-bottom: 6px;
 }
 
 .teacher-action-box {
@@ -1565,7 +1634,7 @@ body.app-layout {
     border: 1px solid #c8e6c9;
     padding: 15px;
     border-radius: 6px;
-    margin-top: 15px;
+    margin-top: 25px;
 }
 
 .teacher-next-step-box {
@@ -1580,10 +1649,11 @@ body.app-layout {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
+    font-size: 0.95rem;
 }
 
 .group-role-table th, .group-role-table td {
-    padding: 10px;
+    padding: 12px 10px;
     text-align: left;
     border-bottom: 1px solid #e0e0e0;
 }
@@ -1596,34 +1666,44 @@ body.app-layout {
 
 .role-badge {
     display: inline-block;
-    padding: 4px 8px;
+    padding: 4px 10px;
     border-radius: 12px;
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .role-refuerzo {
-    background-color: #ffebee;
-    color: #c62828;
-    border: 1px solid #ef9a9a;
+    background-color: #e53935; /* Rojo */
 }
 
-.role-apoyo {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #a5d6a7;
+.role-practico {
+    background-color: #fb8c00; /* Naranja */
 }
 
 .role-recuperacion {
-    background-color: #fff8e1;
-    color: #f57f17;
-    border: 1px solid #ffe082;
+    background-color: #8e24aa; /* Morado */
+}
+
+.role-apoyo {
+    background-color: #43a047; /* Verde */
+}
+
+.role-coordinacion {
+    background-color: #1e88e5; /* Azul */
 }
 
 .role-opcional {
-    background-color: #f3e5f5;
-    color: #6a1b9a;
-    border: 1px solid #ce93d8;
+    background-color: #757575; /* Gris */
+}
+
+/* Antiguos estilos que se solapaban */
+.role-badge.antiguo {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
 }
 
 .selected-week-badge {
