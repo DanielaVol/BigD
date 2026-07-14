@@ -11,7 +11,7 @@ const COURSE_WEEKS = [
     status: "Completada",
     summary: "Conceptos iniciales de probabilidad, espacio muestral, eventos y operaciones.",
     theoryStatus: "Completada",
-    recommendedExercises: 0,
+    recommendedExercises: 10,
     mainDifficulty: "Sin dificultad pendiente",
     groupSuggestion: "No requerido"
   },
@@ -22,7 +22,7 @@ const COURSE_WEEKS = [
     status: "Refuerzo recomendado",
     summary: "Probabilidad condicional, independencia y regla del producto.",
     theoryStatus: "Refuerzo recomendado",
-    recommendedExercises: 2,
+    recommendedExercises: 7,
     mainDifficulty: "Independencia vs probabilidad condicional",
     groupSuggestion: "Grupo de repaso sugerido"
   },
@@ -33,7 +33,7 @@ const COURSE_WEEKS = [
     status: "Completada",
     summary: "Definición de variable aleatoria, interpretación y ejemplos.",
     theoryStatus: "Completada",
-    recommendedExercises: 0,
+    recommendedExercises: 6,
     mainDifficulty: "Sin dificultad pendiente",
     groupSuggestion: "No requerido"
   },
@@ -44,7 +44,7 @@ const COURSE_WEEKS = [
     status: "En curso",
     summary: "Variable aleatoria discreta, función de probabilidad, función de distribución, esperanza, varianza y modelos discretos.",
     theoryStatus: "En progreso",
-    recommendedExercises: 1,
+    recommendedExercises: 8,
     mainDifficulty: "Identificación de valores posibles",
     groupSuggestion: "jueves 18:00"
   }
