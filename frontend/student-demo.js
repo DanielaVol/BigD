@@ -1224,8 +1224,13 @@ function renderExerciseChat(exerciseId, exercise, mainContentArea, mainTitle, ma
 
     document.querySelectorAll('.btn-join-group').forEach(btn => {
         btn.addEventListener('click', () => {
-             localStorage.setItem("juntos_joined_group", "true");
-             clickSidebarMenu('grupos');
+            const state = getJoinedStudyGroupState();
+            state.joined = true;
+            state.groupId = "grupo-valores-posibles";
+            state.joinedAt = new Date().toISOString();
+            state.meetingStatus = "preparacion";
+            saveJoinedStudyGroupState(state);
+            clickSidebarMenu('grupos');
         });
     });
 
@@ -1437,89 +1442,466 @@ function renderPractica(mainContentArea, mainTitle, mainDesc) {
     }
 }
 
+function getJoinedStudyGroupState() {
+    const raw = localStorage.getItem("juntos_joined_study_group");
+
+    if (!raw) {
+        // Migrate old state if exists
+        const oldJoined = localStorage.getItem("juntos_joined_group") === "true";
+        if (oldJoined) {
+            const migratedState = {
+                joined: true,
+                groupId: "grupo-valores-posibles",
+                meetingStatus: "preparacion",
+                preparationCompleted: false,
+                preparationText: "",
+                meetingCompleted: false,
+                reflectionCompleted: false,
+                reflection: null
+            };
+            saveJoinedStudyGroupState(migratedState);
+            return migratedState;
+        }
+
+        return {
+            joined: false,
+            groupId: null,
+            meetingStatus: "not_joined",
+            preparationCompleted: false,
+            preparationText: "",
+            meetingCompleted: false,
+            reflectionCompleted: false,
+            reflection: null
+        };
+    }
+
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return {
+            joined: false,
+            groupId: null,
+            meetingStatus: "not_joined",
+            preparationCompleted: false,
+            preparationText: "",
+            meetingCompleted: false,
+            reflectionCompleted: false,
+            reflection: null
+        };
+    }
+}
+
+function saveJoinedStudyGroupState(state) {
+    localStorage.setItem(
+        "juntos_joined_study_group",
+        JSON.stringify(state)
+    );
+}
+
 function renderGrupos(mainContentArea, mainTitle, mainDesc) {
     const currentWeek = getSelectedWeek();
     mainTitle.textContent = `Grupos de estudio — Semana ${currentWeek.number}`;
     mainDesc.textContent = "Grupos sugeridos según tu desempeño";
 
-    const joinedGroup = localStorage.getItem("juntos_joined_group") === "true";
+    const state = getJoinedStudyGroupState();
 
-    let tema = currentWeek.topicLabel || currentWeek.title;
-    let motivo = "varios estudiantes presentan dificultad similar.";
-    let actividad = "Resolver ejercicios de la guía juntos.";
-
-    if (currentWeek.id === "semana-4") {
-        tema = "Variables aleatorias discretas";
-        motivo = "Reforzar identificación de valores posibles y función de probabilidad.";
-        actividad = "Resolver ejercicios tipo sobre variables de conteo y comparar estrategias.";
-    }
-
-    if (joinedGroup) {
-        mainContentArea.innerHTML = `
-            <div class="grupo-card" style="background-color: #e8f5e9; border: 1px solid #c8e6c9;">
-                <h3 style="color: #1b5e20;">Ya estás inscripta en este grupo de estudio.</h3>
-                <p><strong>Grupo:</strong><br>${tema}</p>
-                <p><strong>Objetivo:</strong><br>${motivo}</p>
-                <p><strong>Integrantes:</strong></p>
-                <ul style="padding-left: 20px;">
-                    <li>Ana Torres</li>
-                    <li>Diego Pérez</li>
-                    <li>Camila Ruiz</li>
-                    <li>Martín Gómez</li>
-                </ul>
-                <p><strong>Actividad sugerida:</strong><br>${actividad}</p>
-
-                ${currentWeek.id !== 'semana-4' ? `
-                <div style="margin-top: 30px;">
-                    <button id="btn-volver-semana4-grupos" class="demo-btn">Volver a Semana 4</button>
-                </div>
-                ` : ''}
-            </div>
-        `;
-    } else {
+    if (currentWeek.id !== 'semana-4') {
         mainContentArea.innerHTML = `
             <div class="grupo-card">
-                <h3>Grupo sugerido por JUNTOS</h3>
-                <p><strong>Tema:</strong> ${tema}</p>
-                <p><strong>Objetivo:</strong> ${motivo}</p>
-                <p><strong>Integrantes sugeridos:</strong></p>
-                <ul style="padding-left: 20px;">
-                    <li>Ana Torres</li>
-                    <li>Diego Pérez</li>
-                    <li>Camila Ruiz</li>
-                    <li>Martín Gómez</li>
-                </ul>
-                <p><strong>Actividad sugerida:</strong></p>
-                <p>${actividad}</p>
-                <button id="btn-unirse-grupo" class="demo-btn primary mt-10">Unirme al grupo</button>
-                <div id="msg-unirse-grupo" class="success-msg hidden mt-10" style="padding: 10px; background-color: #eef2f5; border-left: 4px solid var(--accent-color); border-radius: 4px;">
-                    Ana fue sumada al grupo sugerido para reforzar Variables aleatorias discretas.
+                <h3>${currentWeek.title}</h3>
+                <p>En una versión completa, JUNTOS recomendaría grupos de estudio para esta semana según tu desempeño.</p>
+                <div style="margin-top: 30px;">
+                    <button id="btn-volver-semana4-grupos" class="demo-btn">Volver a Semana 4 para ver demo funcional</button>
+                </div>
+            </div>
+        `;
+        document.getElementById('btn-volver-semana4-grupos').addEventListener('click', () => {
+            setSelectedWeekId("semana-4");
+            clickSidebarMenu('grupos');
+        });
+        return;
+    }
+
+    if (!state.joined) {
+        // ESTADO 1 — ANTES DE UNIRSE
+        mainContentArea.innerHTML = `
+            <div class="study-group-suggestion-card">
+                <h3>Grupo sugerido para vos</h3>
+
+                <div class="group-meeting-meta">
+                    <div><strong>Tema:</strong> Valores posibles de variables aleatorias discretas</div>
+                    <div><strong>Fecha:</strong> Jueves 18:00</div>
+                    <div><strong>Duración:</strong> 40 minutos</div>
+                    <div><strong>Modalidad:</strong> Encuentro presencial en la facultad</div>
                 </div>
 
-                ${currentWeek.id !== 'semana-4' ? `
-                <div style="margin-top: 30px;">
-                    <button id="btn-volver-semana4-grupos" class="demo-btn">Volver a Semana 4</button>
+                <p style="margin-bottom: 15px;"><strong>Motivo de la recomendación:</strong><br>
+                JUNTOS detectó que todavía necesitás reforzar cómo identificar todos los valores posibles de una variable de conteo, especialmente cuándo puede aparecer el valor 0.</p>
+
+                <p style="margin-bottom: 15px;"><strong>Objetivo del grupo:</strong><br>
+                Aprender a definir correctamente una variable aleatoria discreta y justificar todos sus valores posibles.</p>
+
+                <p><strong>Integrantes y Roles:</strong></p>
+                <ul class="group-member-list">
+                    <li>
+                        <strong>Ana Torres</strong>
+                        <span class="group-member-role">Rol: Refuerzo conceptual</span>
+                        Objetivo individual: reconocer todos los valores posibles de X.
+                    </li>
+                    <li>
+                        <strong>Martín López</strong>
+                        <span class="group-member-role">Rol: Refuerzo práctico</span>
+                        Objetivo individual: pasar de los valores posibles a una tabla de probabilidades.
+                    </li>
+                    <li>
+                        <strong>Sofía Díaz</strong>
+                        <span class="group-member-role">Rol: Refuerzo de modelos</span>
+                        Objetivo individual: reconocer cuándo corresponde usar Binomial.
+                    </li>
+                    <li>
+                        <strong>Camila Ruiz</strong>
+                        <span class="group-member-role">Rol: Apoyo par</span>
+                        Objetivo individual: ayudar a revisar procedimientos sin dar respuestas.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="study-group-suggestion-card">
+                <h3>¿Por qué este grupo puede ayudarte?</h3>
+                <p style="margin-bottom: 20px;">Los integrantes fueron seleccionados porque presentan dificultades relacionadas o porque pueden actuar como apoyo. Cada persona tendrá una responsabilidad concreta para evitar que una sola resuelva todo el ejercicio.</p>
+
+                <div style="display: flex; gap: 10px;">
+                    <button id="btn-unirse-grupo" class="demo-btn primary">Unirme al grupo</button>
+                    <button id="btn-rechazar-grupo" class="demo-btn">Ahora no</button>
                 </div>
-                ` : ''}
+
+                <div id="msg-unirse-grupo" class="success-msg hidden mt-10" style="padding: 10px; background-color: #e8f5e9; border-left: 4px solid var(--accent-color); border-radius: 4px; color: #1b5e20;">
+                    Ya sos parte del grupo.
+                </div>
             </div>
         `;
 
         document.getElementById('btn-unirse-grupo').addEventListener('click', function() {
-            localStorage.setItem("juntos_joined_group", "true");
             document.getElementById('btn-unirse-grupo').classList.add('hidden');
+            document.getElementById('btn-rechazar-grupo').classList.add('hidden');
             document.getElementById('msg-unirse-grupo').classList.remove('hidden');
-            setTimeout(() => {
-                renderGrupos(mainContentArea, mainTitle, mainDesc);
-            }, 1500);
-        });
-    }
 
-    const btnVolver = document.getElementById('btn-volver-semana4-grupos');
-    if (btnVolver) {
-        btnVolver.addEventListener('click', () => {
-            setSelectedWeekId("semana-4");
-            clickSidebarMenu('grupos');
+            setTimeout(() => {
+                state.joined = true;
+                state.groupId = "grupo-valores-posibles";
+                state.joinedAt = new Date().toISOString();
+                state.meetingStatus = "preparacion";
+                saveJoinedStudyGroupState(state);
+                renderGrupos(mainContentArea, mainTitle, mainDesc);
+            }, 1000);
         });
+
+        document.getElementById('btn-rechazar-grupo').addEventListener('click', function() {
+            clickSidebarMenu('inicio');
+        });
+
+    } else {
+        // ESTADO 2 — DESPUÉS DE UNIRSE
+
+        let prepSectionHTML = "";
+        if (!state.preparationCompleted) {
+            prepSectionHTML = `
+                <div class="group-preparation-card">
+                    <h3>Antes de reunirte</h3>
+                    <p style="margin-bottom: 15px;">Esta preparación debería llevarte entre 5 y 10 minutos. No hace falta resolver el ejercicio completo.</p>
+
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 4px; border-left: 4px solid #ccc; margin-bottom: 15px;">
+                        <strong>Actividad previa:</strong><br>
+                        Se lanzan dos monedas y X representa la cantidad de caras obtenidas.<br><br>
+                        <strong>Responder:</strong><br>
+                        1. ¿Qué representa X?<br>
+                        2. ¿Puede X valer 0? ¿Por qué?<br>
+                        3. ¿Cuáles son todos los valores posibles?<br>
+                        4. ¿Qué parte te genera más duda?
+                    </div>
+
+                    <textarea id="study-group-preparation" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;" placeholder="Escribí una respuesta breve para llevar al grupo..."></textarea>
+
+                    <button id="btn-guardar-preparacion" class="demo-btn primary">Guardar mi preparación</button>
+                </div>
+            `;
+        } else {
+            prepSectionHTML = `
+                <div class="group-preparation-card" style="background-color: #e8f5e9; border: 1px solid #c8e6c9;">
+                    <h3 style="color: #1b5e20;">Preparación completada</h3>
+                    <p style="margin-bottom: 15px;">Preparación guardada. Esta respuesta te servirá como punto de partida durante la reunión.</p>
+
+                    <div style="background: white; padding: 15px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 15px;">
+                        <strong>Tu respuesta:</strong><br>
+                        ${escapeHtml(state.preparationText).replace(/\\n/g, "<br>")}
+                    </div>
+
+                    <div style="background: #e8f4f8; padding: 15px; border-radius: 4px; border-left: 4px solid var(--accent-color);">
+                        <strong>Orientación de JUNTOS:</strong><br>
+                        Durante el encuentro, compará tu lista de valores posibles con la de los demás y fijate si todos consideraron el caso en que no aparece ninguna cara.
+                    </div>
+                </div>
+            `;
+        }
+
+        let resultSectionHTML = "";
+        if (state.reflectionCompleted && state.reflection) {
+            let feedbackMsg = "";
+            let btnMsg = "";
+            let actionFn = "";
+
+            if (state.reflection.understanding === "lo-entiendo") {
+                feedbackMsg = "Completaste el encuentro y manifestaste que comprendés mejor el tema. JUNTOS te recomienda volver a intentar el ejercicio obligatorio sobre valores posibles.";
+                btnMsg = "Ir a la guía de ejercicios";
+                actionFn = "clickSidebarMenu('guia')";
+            } else if (state.reflection.understanding === "necesito-practica") {
+                feedbackMsg = "El grupo ayudó parcialmente, pero todavía necesitás práctica. JUNTOS te recomienda resolver un ejercicio adicional antes de continuar.";
+                btnMsg = "Ver ejercicio recomendado";
+                actionFn = "clickSidebarMenu('guia')";
+            } else {
+                feedbackMsg = "El encuentro no alcanzó para resolver la dificultad. JUNTOS registrará que necesitás otra intervención y te recomienda realizar una consulta al docente.";
+                btnMsg = "Ir a Consultas";
+                actionFn = "clickSidebarMenu('consultas')";
+            }
+
+            resultSectionHTML = `
+                <div class="group-result-card" style="background-color: #e8f4f8; border: 1px solid #b3e5fc;">
+                    <h3>Resultado del encuentro</h3>
+                    <p style="margin-bottom: 15px;">${feedbackMsg}</p>
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px; font-style: italic;">En una versión completa, esta información actualizaría tu diagnóstico y el dashboard docente.</p>
+                    <button onclick="${actionFn}" class="demo-btn primary">${btnMsg}</button>
+                </div>
+            `;
+        }
+
+        mainContentArea.innerHTML = `
+            <div class="study-group-joined-card">
+                <h3>Ya sos parte del grupo</h3>
+                <div class="group-meeting-meta">
+                    <div><strong>Grupo:</strong> Valores posibles de variables aleatorias discretas</div>
+                    <div><strong>Próximo encuentro:</strong> Jueves 18:00</div>
+                    <div><strong>Modalidad:</strong> Presencial — Biblioteca de la facultad</div>
+                    <div><strong>Estado:</strong> ${state.reflectionCompleted ? 'Completado' : (state.preparationCompleted ? 'Reunión pendiente' : 'Preparación previa')}</div>
+                </div>
+            </div>
+
+            <div class="study-group-progress">
+                <div class="study-group-step study-group-step-completed">1. Inscripción</div>
+                <div class="study-group-step ${!state.preparationCompleted ? 'study-group-step-current' : 'study-group-step-completed'}">2. Preparación individual</div>
+                <div class="study-group-step ${state.preparationCompleted && !state.reflectionCompleted ? 'study-group-step-current' : (state.reflectionCompleted ? 'study-group-step-completed' : '')}">3. Reunión grupal</div>
+                <div class="study-group-step ${state.reflectionCompleted ? 'study-group-step-completed' : ''}">4. Cierre y reflexión</div>
+            </div>
+
+            <div class="student-group-role-card">
+                <h3>Tu rol en el encuentro</h3>
+                <p><strong>Tu rol:</strong> Refuerzo conceptual</p>
+                <p><strong>Tu objetivo:</strong> Al finalizar el encuentro deberías poder identificar todos los valores posibles de una variable de conteo y justificar cuándo puede tomar el valor 0.</p>
+                <p style="margin-top: 10px;"><strong>Tu responsabilidad durante la reunión:</strong></p>
+                <ul style="margin-left: 20px; margin-bottom: 10px;">
+                    <li>explicar con tus palabras qué representa la variable X;</li>
+                    <li>proponer los valores posibles antes de mirar la respuesta de otros;</li>
+                    <li>preguntar cuando no entiendas un paso;</li>
+                    <li>explicar al final qué error corregiste.</li>
+                </ul>
+                <p style="font-size: 0.85rem; font-style: italic; color: #666;">Nota: Tu rol no es una etiqueta fija. Describe qué necesitás trabajar en este encuentro.</p>
+            </div>
+
+            ${prepSectionHTML}
+
+            <div class="group-agenda-card">
+                <h3>Agenda sugerida por JUNTOS</h3>
+                <p style="margin-bottom: 15px;"><strong>Duración total:</strong> 40 minutos</p>
+
+                <div class="group-agenda-item">
+                    <strong>1. Presentación rápida — 5 minutos</strong><br>
+                    Cada integrante explica qué parte del tema le cuesta o qué pudo resolver.
+                </div>
+                <div class="group-agenda-item">
+                    <strong>2. Comparación de respuestas — 10 minutos</strong><br>
+                    Cada integrante muestra los valores posibles que identificó en la actividad previa.
+                </div>
+                <div class="group-agenda-item">
+                    <strong>3. Resolución colaborativa — 15 minutos</strong><br>
+                    Resolver dos ejercicios sin que una sola persona haga todo.
+                </div>
+                <div class="group-agenda-item">
+                    <strong>4. Explicación por roles — 5 minutos</strong><br>
+                    Cada integrante explica una parte:
+                    <ul style="margin-left: 20px;">
+                        <li>definir el experimento;</li>
+                        <li>definir X;</li>
+                        <li>listar valores posibles;</li>
+                        <li>verificar si aparece el valor 0.</li>
+                    </ul>
+                </div>
+                <div class="group-agenda-item">
+                    <strong>5. Cierre — 5 minutos</strong><br>
+                    Cada integrante dice qué entendió y qué duda le queda.
+                </div>
+            </div>
+
+            <div class="group-rules-card">
+                <h3>Reglas para trabajar</h3>
+                <ul style="margin-left: 20px;">
+                    <li>Todos deben explicar al menos una parte.</li>
+                    <li>El estudiante de apoyo no debe dar directamente la respuesta.</li>
+                    <li>Antes de corregir a alguien, preguntar cómo llegó a esa conclusión.</li>
+                    <li>Si no hay acuerdo, consultar el material de la cátedra.</li>
+                    <li>Registrar las dudas que el grupo no pudo resolver.</li>
+                    <li>No usar la IA para obtener la solución completa durante la reunión.</li>
+                </ul>
+            </div>
+
+            <div class="group-activity-card">
+                <h3>Actividad principal</h3>
+
+                <div style="margin-bottom: 15px;">
+                    <strong>Ejercicio 1:</strong><br>
+                    Se lanzan tres monedas. X es la cantidad de caras obtenidas.<br>
+                    El grupo debe:
+                    <ul style="margin-left: 20px;">
+                        <li>definir el experimento;</li>
+                        <li>definir la variable X;</li>
+                        <li>listar todos sus valores posibles;</li>
+                        <li>justificar si X puede valer 0;</li>
+                        <li>comparar las respuestas individuales.</li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <strong>Ejercicio 2:</strong><br>
+                    En una hora, X representa la cantidad de consultas recibidas por una mesa de ayuda.<br>
+                    El grupo debe:
+                    <ul style="margin-left: 20px;">
+                        <li>decidir si X es discreta;</li>
+                        <li>proponer valores posibles;</li>
+                        <li>explicar por qué el valor 0 debe considerarse;</li>
+                        <li>relacionarlo con un modelo de conteo.</li>
+                    </ul>
+                </div>
+
+                <div style="background: #fff3e0; padding: 15px; border-radius: 4px; border-left: 4px solid #ffb74d;">
+                    <strong>Producto esperado:</strong><br>
+                    Al finalizar, el grupo debe tener:
+                    <ul style="margin-left: 20px;">
+                        <li>una definición clara de cada variable;</li>
+                        <li>la lista completa de valores posibles;</li>
+                        <li>una explicación del caso X = 0;</li>
+                        <li>una duda pendiente, si todavía existe.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="group-materials-card">
+                <h3>Materiales para la reunión</h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="demo-btn small-btn" onclick="clickSidebarMenu('material')">Ver apunte sobre variables aleatorias discretas</button>
+                    <button class="demo-btn small-btn" onclick="clickSidebarMenu('material')">Ver ejemplo de variable de conteo</button>
+                    <button class="demo-btn small-btn" onclick="clickSidebarMenu('guia')">Abrir ejercicios adicionales</button>
+                    <button class="demo-btn small-btn" onclick="clickSidebarMenu('diagnostico')">Revisar mi diagnóstico</button>
+                </div>
+            </div>
+
+            ${!state.reflectionCompleted ? `
+            <div class="group-reflection-card" id="reflection-card-container">
+                <h3>Registrar el encuentro</h3>
+
+                <button id="btn-mostrar-cierre" class="demo-btn primary">Ya tuvimos la reunión</button>
+
+                <div id="study-group-reflection-form" style="display: none; margin-top: 20px;">
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 5px;">1. ¿Pudieron realizar la actividad?</label>
+                        <select id="ref-activity" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="">Seleccionar...</option>
+                            <option value="completa">Sí, completa</option>
+                            <option value="parcial">Parcialmente</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 5px;">2. ¿Participaron todos?</label>
+                        <select id="ref-participation" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="">Seleccionar...</option>
+                            <option value="si">Sí</option>
+                            <option value="parcial">Parcialmente</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 5px;">3. ¿Qué concepto trabajaron?</label>
+                        <textarea id="ref-concept" rows="2" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;"></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 5px;">4. ¿Qué duda quedó pendiente?</label>
+                        <textarea id="ref-pending" rows="2" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;"></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 5px;">5. ¿Cómo te sentís ahora con el tema?</label>
+                        <select id="ref-understanding" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="">Seleccionar...</option>
+                            <option value="lo-entiendo">Lo entiendo mejor</option>
+                            <option value="necesito-practica">Todavía necesito práctica</option>
+                            <option value="no-entiendo">Sigo sin entenderlo</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 5px;">6. ¿Te resultó útil el grupo?</label>
+                        <select id="ref-usefulness" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="">Seleccionar...</option>
+                            <option value="si">Sí</option>
+                            <option value="mas-o-menos">Más o menos</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+
+                    <button id="btn-guardar-cierre" class="demo-btn primary">Guardar cierre del encuentro</button>
+                </div>
+            </div>
+            ` : resultSectionHTML}
+
+            <p class="group-privacy-note">Después del encuentro, el docente podrá ver si el grupo se reunió, qué actividad realizó y qué dificultades siguen pendientes. No verá conversaciones privadas entre estudiantes.</p>
+        `;
+
+        if (!state.preparationCompleted) {
+            document.getElementById('btn-guardar-preparacion')?.addEventListener('click', function() {
+                const textarea = document.getElementById("study-group-preparation");
+                state.preparationCompleted = true;
+                state.preparationText = textarea ? textarea.value.trim() : "";
+                state.meetingStatus = "reunion_pendiente";
+                saveJoinedStudyGroupState(state);
+                renderGrupos(mainContentArea, mainTitle, mainDesc);
+            });
+        }
+
+        if (!state.reflectionCompleted) {
+            document.getElementById('btn-mostrar-cierre')?.addEventListener('click', function() {
+                document.getElementById('btn-mostrar-cierre').style.display = 'none';
+                document.getElementById('study-group-reflection-form').style.display = 'block';
+            });
+
+            document.getElementById('btn-guardar-cierre')?.addEventListener('click', function() {
+                state.meetingCompleted = true;
+                state.reflectionCompleted = true;
+                state.meetingStatus = "completado";
+                state.reflection = {
+                    activityCompleted: document.getElementById("ref-activity")?.value || "",
+                    participation: document.getElementById("ref-participation")?.value || "",
+                    conceptWorked: document.getElementById("ref-concept")?.value || "",
+                    pendingQuestion: document.getElementById("ref-pending")?.value || "",
+                    understanding: document.getElementById("ref-understanding")?.value || "",
+                    usefulness: document.getElementById("ref-usefulness")?.value || "",
+                    completedAt: new Date().toISOString()
+                };
+                saveJoinedStudyGroupState(state);
+                renderGrupos(mainContentArea, mainTitle, mainDesc);
+            });
+        }
+
     }
 }
 function renderConsultas(mainContentArea, mainTitle, mainDesc) {
